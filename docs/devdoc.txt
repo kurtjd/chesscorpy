@@ -1,0 +1,86 @@
+Libraries
+=========
+flask
+chess
+chess.js
+chessboard.js
+
+
+Database Tables
+===============
+users
+-----
+id
+username
+password
+email
+rating
+notifications
+timestamp
+
+game_requests
+-------------
+id
+turn_day_limit
+color
+timestamp
+
+games
+-----
+id
+player_white_id
+player_black_id
+turn_day_limit
+to_move
+status
+winner
+pgn
+timestamp
+
+messages
+--------
+id
+game_id
+player1_id
+player_2id
+timestamp
+
+
+Pages
+=====
+index
+-----
+-Show welcome screen and allow user to register or login
+
+register
+--------
+-Allow user to register
+
+login
+-----
+-Allow user to login
+
+logout
+------
+-Logsout user
+
+history
+-------
+-Allow user to view history of games
+
+newgame
+-------
+-Allows user to create a new game directly with another user or in lobby
+-Allows user to set turn day limit and which ratings can see the game
+-Allows user to pick color
+
+lobby
+-----
+-Allows user to view open games
+-Allows user to sort by turn limit, rating, and color
+
+game
+----
+-Allows user to view current state of a game they are playing and to make moves
+-Allows user to select a piece and have legal moves highlighted
+-Allows user to abandon game, offer draw, or chat
