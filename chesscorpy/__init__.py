@@ -3,6 +3,7 @@ import time
 from sqlite3 import connect, Row
 from flask import Flask, render_template, session, redirect, request
 from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
 from chesscorpy.helpers import error, login_required
 
 app = Flask(__name__)
@@ -67,9 +68,8 @@ def register():
             return error("Username already exists", 400)
 
         # Finally create new user in database
-        # TODO: Hash password
         db.execute("INSERT INTO users (username, password, email, rating, notifications) VALUES(?, ?, ?, ?, ?)",
-                   [username, password, email, rating, notifications])
+                   [username, generate_password_hash(password), email, rating, notifications])
 
         # Auto login user
         user_id = db.execute("SELECT id FROM users WHERE username=?", [username]).fetchone()
@@ -99,19 +99,25 @@ def login():
         elif not password:
             return error("Please provide a password.", 400)
 
-        # Attempt to login user
         db = connect(DATABASE_FILE)
         db.row_factory = Row
-        user_id = db.execute("SELECT id FROM users WHERE LOWER(username)=? AND password=?",
-                             [username, password]).fetchone()
+
+        # Retrieve user data by username.
+        user = db.execute("SELECT id,username,password FROM users WHERE LOWER(username)=?",
+                          [username]).fetchone()
+
+        # Make sure username exists.
+        if not user:
+            return error("User does not exist.", 400)
+
+        user.keys()
 
         # Make sure username and password combination is valid.
-        if not user_id:
+        if not check_password_hash(user["password"], password):
             return error("Username and password combination is invalid.", 400)
 
         # If valid, create session with user's id
-        user_id.keys()
-        session["user_id"] = user_id["id"]
+        session["user_id"] = user["id"]
 
         db.close()
 
