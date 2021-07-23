@@ -8,5 +8,5 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Routes were defined in individual files, so import them here.
-import index
-import register
+import chesscorpy.index
+import chesscorpy.register

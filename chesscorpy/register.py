@@ -1,8 +1,8 @@
-from main import app
+from chesscorpy import app
 from flask import request, redirect, render_template
 from sqlite3 import connect
-from helpers import error
-from globals import USERNAME_MAX_LEN, DATABASE_FILE
+from chesscorpy.helpers import error
+from chesscorpy.globals import USERNAME_MAX_LEN, DATABASE_FILE
 
 
 @app.route("/register", methods=["GET", "POST"])

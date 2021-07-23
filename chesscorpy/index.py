@@ -1,4 +1,4 @@
-from main import app
+from chesscorpy import app
 from flask import render_template, session
 
 
