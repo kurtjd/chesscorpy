@@ -5,6 +5,27 @@
 {% endblock %}
 
 {% block main %}
-    Welcome to the game lobby.<br>
-    <a href="/logout">Logout</a>
-{% endblock %}}
+    <h1>Welcome to the game lobby!</h1>
+    <table>
+        <tr>
+            <td><b>Challenger</b></td>
+            <td><b>Challenger Rating</b></td>
+            <td><b>Challenger Color</b></td>
+            <td><b>Turn Limit</b></td>
+            <td><b>Challenge Issued</b></td>
+            <td><b>Accept Challenge?</b></td>
+        </tr>
+    {% for game in games %}
+        <tr>
+            <td>{{ game.username }}</td>
+            <td>{{ game.rating }}</td>
+            <td>{{ game.color }}</td>
+            <td>{{ game.turn_day_limit }}</td>
+            <td>{{ game.timestamp }}</td>
+            <td><a href="/start?id={{ game.id }}">Accept</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br>
+    <a href="/newgame">Create Challenge</a> | <a href="/logout">Logout</a>
+{% endblock %}

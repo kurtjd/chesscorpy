@@ -21,8 +21,13 @@ timestamp
 game_requests
 -------------
 id
+user_id
+opponent_id
 turn_day_limit
+min_rating
+max_rating
 color
+public
 timestamp
 
 games
@@ -32,9 +37,11 @@ player_white_id
 player_black_id
 turn_day_limit
 to_move
+move_start_time
 status
 winner
 pgn
+public
 timestamp
 
 messages
@@ -76,11 +83,19 @@ newgame
 
 lobby
 -----
--Allows user to view open games
+-Allows user to view open public games
 -Allows user to sort by turn limit, rating, and color
+
+challenges
+-----------
+-Allows user to view direct challenges from other users
 
 game
 ----
 -Allows user to view current state of a game they are playing and to make moves
 -Allows user to select a piece and have legal moves highlighted
 -Allows user to abandon game, offer draw, or chat
+
+start
+-----
+-Creates a game based off data in game_request

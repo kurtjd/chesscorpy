@@ -11,6 +11,10 @@ Session(app)
 
 # Setup globals
 USERNAME_MAX_LEN = 15
+DEFAULT_RATING = 1000
+MIN_RATING = 1
+MAX_RATING = 3000
+PUBLIC_USER_ID = 0
 DATABASE_FILE = "chesscorpy.db"
 
 
@@ -33,21 +37,21 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         email = request.form.get("email")
-        rating = int(request.form.get("rating")) if request.form.get("rating").isdigit() else 1000  # Default to 1000
+        rating = int(request.form.get("rating")) if request.form.get("rating").isdigit() else DEFAULT_RATING
         notifications = 0 if not request.form.get("notifications") else 1
 
         # Handle error checking
         # TODO: More error checking (ie valid email, email length, etc)
-        if not username:
-            return error("Please provide a username.", 400)
+        if not username or username.lower() == "public":
+            return error("Please provide a valid username.", 400)
         elif not password:
             return error("Please provide a password.", 400)
         elif not email:
             return error("Please provide an email address.", 400)
         elif len(username) > USERNAME_MAX_LEN:
             return error(f"Username cannot be greater than {USERNAME_MAX_LEN} characters.", 400)
-        elif not (1 <= int(rating) <= 3000):
-            return error("Rating must be a number between 1 and 3000", 400)
+        elif not (MIN_RATING <= int(rating) <= MAX_RATING):
+            return error(f"Rating must be a number between {MIN_RATING} and {MAX_RATING}", 400)
 
         db = connect(DATABASE_FILE)
         db.row_factory = Row
@@ -101,6 +105,8 @@ def login():
         user_id.keys()
         session["user_id"] = user_id["id"]
 
+        db.close()
+
         return redirect("/lobby")
     else:
         return render_template("login.html")
@@ -117,4 +123,81 @@ def logout():
 @app.route("/lobby")
 @login_required
 def lobby():
-    return render_template("lobby.html")
+    db = connect(DATABASE_FILE)
+    db.row_factory = Row
+
+    # Selects all games that the current user has not created themselves, which are challenging the public, and which
+    # have rating requirements meeting the current user's rating.
+    rows = db.execute("SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
+                      "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
+                      "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? "
+                      "AND (SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
+                      [PUBLIC_USER_ID, session["user_id"], session["user_id"]]).fetchall()
+    db.close()
+    games = [dict(row) for row in rows]
+
+    return render_template("lobby.html", games=games)
+
+
+@app.route("/newgame", methods=["GET", "POST"])
+@login_required
+def newgame():
+    if request.method == "POST":
+        username = request.form.get("username").lower()
+        color = request.form.get("color")
+        turnlimit = None if not request.form.get("turnlimit").isdigit() else int(request.form.get("turnlimit"))
+        minrating = None if not request.form.get("minrating").isdigit() else int(request.form.get("minrating"))
+        maxrating = None if not request.form.get("maxrating").isdigit() else int(request.form.get("maxrating"))
+        public = 0 if not request.form.get("public") else 1
+
+        # Handle error checking
+        if not username:
+            return error("Please enter the name of the user you wish to challenge.", 400)
+        elif not color:
+            return error("Please select the color you wish to play.", 400)
+        elif not turnlimit:
+            return error("Please enter a turn limit in days.", 400)
+        elif not minrating:
+            return error("Please enter the minimum rating you wish for people to see your challenge.", 400)
+        elif not maxrating:
+            return error("Please enter the maximum rating you wish for people to see your challenge.", 400)
+        elif color not in ("random", "white", "black"):
+            return error("Please enter a valid color.", 400)
+        elif turnlimit < 1:
+            return error("Please enter a turn limit greater than 0.", 400)
+        elif not (1 <= minrating <= 3000):
+            return error("Please enter a minimum rating between 1 and 3000.", 400)
+        elif not (1 <= maxrating <= 3000):
+            return error("Please enter a maximum rating between 1 and 3000.", 400)
+        elif minrating > maxrating:
+            return error("Please enter a minimum rating that is less than or equal to the maximum rating.", 400)
+
+        db = connect(DATABASE_FILE)
+        db.row_factory = Row
+
+        # Check that the user someone wants to challenge actually exists if this is not a challenge to the public.
+        if username != "public":
+            opponent_id = db.execute("SELECT id FROM users WHERE LOWER(username)=?", [username]).fetchone()
+
+            if not opponent_id:
+                return error("Please enter a valid user to challenge.", 400)
+
+            opponent_id.keys()
+            opponent_id = opponent_id["id"]
+
+            # Don't let dingdongs challenge themselves.
+            if opponent_id == session["user_id"]:
+                return error("You cannot challenge yourself.", 400)
+        else:
+            opponent_id = 0
+
+        # Now enter the challenge into the database.
+        db.execute("INSERT INTO game_requests (user_id, opponent_id, turn_day_limit,"
+                   "min_rating, max_rating, color, public) VALUES(?, ?, ?, ?, ?, ?, ?)",
+                   [session["user_id"], opponent_id, turnlimit, minrating, maxrating, color, public])
+        db.commit()
+        db.close()
+
+        return redirect("/lobby")
+    else:
+        return render_template("newgame.html")

@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    New Game
+{% endblock %}
+
+{% block main %}
+<form action="/newgame" method="post">
+    User (keep "Public" if open to public): <input type="text" name="username" value="Public"><br>
+    Color:
+    <select name="color">
+        <option value="random">Random</option>
+        <option value="white">White</option>
+        <option value="black">Black</option>
+    </select>
+    <br>
+    Turn Limit (days): <input type="text" name="turnlimit" value="1"><br>
+    Minimum Rating: <input type="text" name="minrating" value="1"><br>
+    Maximum Rating: <input type="text" name="maxrating" value="3000"><br>
+    Publically Viewable: <input type="checkbox" name="public" checked><br>
+    <input type="submit" value="Create Game">
+</form>
+{% endblock %}
