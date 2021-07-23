@@ -1,9 +1,19 @@
 Libraries
 =========
+Python
+------
 flask
+flask-session
 chess
+
+JS
+---
 chess.js
 chessboard.js
+
+CSS
+---
+Bootstrap and/or tailwind
 
 
 Database Tables
@@ -49,7 +59,7 @@ messages
 id
 game_id
 player1_id
-player_2id
+player2_id
 timestamp
 
 
@@ -73,7 +83,7 @@ logout
 
 history
 -------
--Allow user to view history of games
+-Allow user to view history of public games of a user
 
 newgame
 -------
@@ -94,7 +104,8 @@ game
 ----
 -Allows user to view current state of a game they are playing and to make moves
 -Allows user to select a piece and have legal moves highlighted
--Allows user to abandon game, offer draw, or chat
+-Allows user to resign or offer draw
+-Allows players to chat
 
 start
 -----

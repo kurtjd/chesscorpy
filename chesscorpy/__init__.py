@@ -1,3 +1,5 @@
+import random
+import time
 from sqlite3 import connect, Row
 from flask import Flask, render_template, session, redirect, request
 from flask_session import Session
@@ -9,7 +11,7 @@ app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Setup globals
+# Initialize global constants
 USERNAME_MAX_LEN = 15
 DEFAULT_RATING = 1000
 MIN_RATING = 1
@@ -201,3 +203,74 @@ def newgame():
         return redirect("/lobby")
     else:
         return render_template("newgame.html")
+
+
+@app.route("/start")
+@login_required
+def start():
+    request_id = request.args.get("id")
+
+    # Don't allow blank or invalid request IDs.
+    if not request_id or not request_id.isdigit():
+        return redirect("/")
+
+    db = connect(DATABASE_FILE)
+    cur = db.cursor()
+    cur.row_factory = Row
+
+    # Make sure game request exists.
+    game_request = cur.execute("SELECT * FROM game_requests WHERE id=?", [request_id]).fetchone()
+    if not game_request:
+        return redirect("/")
+
+    # Determine which player is which color.
+    if game_request["color"] == "white":
+        white_id = game_request["user_id"]
+        black_id = session["user_id"]
+    elif game_request["color"] == "black":
+        white_id = session["user_id"]
+        black_id = game_request["user_id"]
+    else:
+        # Assign colors randomly.
+        random.seed(time.time())
+
+        if random.randint(0, 1) == 1:
+            white_id = game_request["user_id"]
+            black_id = session["user_id"]
+        else:
+            white_id = session["user_id"]
+            black_id = game_request["user_id"]
+
+    # Create game based off data in the game request.
+    game_request.keys()
+    cur.execute("INSERT INTO games (player_white_id,player_black_id,turn_day_limit,public) VALUES(?,?,?,?)",
+                [white_id, black_id, game_request["turn_day_limit"], game_request["public"]])
+    game_id = cur.lastrowid
+
+    # Delete game request from database.
+    cur.execute("DELETE FROM game_requests WHERE id=?", [request_id])
+
+    db.commit()
+    db.close()
+
+    # Jump to the newly created game.
+    return redirect(f"/game?id={game_id}")
+
+
+@app.route("/game")
+@login_required
+def game():
+    game_id = request.args.get("id")
+
+    # Select game where if it exists and the user is either a player in the game or the game is public.
+    db = connect(DATABASE_FILE)
+    game_data = db.execute("SELECT * FROM games WHERE id=? AND (player_white_id=? OR player_black_id=? OR public=1)",
+                           [game_id, session["user_id"], session["user_id"]]).fetchone()
+
+    # Error handling
+    if not game_data:
+        return redirect("/")
+
+    db.close()
+
+    return render_template("game.html")
