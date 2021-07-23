@@ -22,6 +22,8 @@ DATABASE_FILE = "chesscorpy.db"
 
 @app.route("/")
 def index():
+    """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
+
     # If user is already logged in, just redirect to the game lobby.
     if session.get("user_id") is not None:
         return redirect("/lobby")
@@ -31,6 +33,8 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """ Allows a new user to register. """
+
     # If user is logged in, just go back to home page.
     if session.get("user_id"):
         return redirect("/")
@@ -82,6 +86,8 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """ Allows a user to login. """
+
     if request.method == "POST":
         username = request.form.get("username").lower()
         password = request.form.get("password")
@@ -117,6 +123,8 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    """ Logs a user out. """
+
     # Delete user's session and return to homepage.
     session.clear()
     return redirect("/")
@@ -125,6 +133,8 @@ def logout():
 @app.route("/lobby")
 @login_required
 def lobby():
+    """ Displays a lobby of public game requests and allows users to sort and accept these requests. """
+
     db = connect(DATABASE_FILE)
     db.row_factory = Row
 
@@ -144,6 +154,8 @@ def lobby():
 @app.route("/newgame", methods=["GET", "POST"])
 @login_required
 def newgame():
+    """ Allows users to create a game request. """
+
     if request.method == "POST":
         username = request.form.get("username").lower()
         color = request.form.get("color")
@@ -208,6 +220,8 @@ def newgame():
 @app.route("/start")
 @login_required
 def start():
+    """ Creates a game from a game request. """
+
     request_id = request.args.get("id")
 
     # Don't allow blank or invalid request IDs.
@@ -260,9 +274,11 @@ def start():
 @app.route("/game")
 @login_required
 def game():
+    """ Generates a game board based on the status of the game and allows user to make moves. """
+
     game_id = request.args.get("id")
 
-    # Select game where if it exists and the user is either a player in the game or the game is public.
+    # Select game if it exists and the user is either a player in the game or the game is public.
     db = connect(DATABASE_FILE)
     game_data = db.execute("SELECT * FROM games WHERE id=? AND (player_white_id=? OR player_black_id=? OR public=1)",
                            [game_id, session["user_id"], session["user_id"]]).fetchone()
