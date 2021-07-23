@@ -1,8 +1,12 @@
 from flask import Flask
+from flask_session import Session
 
 app = Flask(__name__)
 
+# Configure sessions
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
-@app.route("/")
-def hello_chess():
-    return "<p>Chess is fun!</p>"
+# Routes were defined in individual files, so import them here.
+import index
+import register

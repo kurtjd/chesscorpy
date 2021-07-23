@@ -1,0 +1,2 @@
+USERNAME_MAX_LEN = 15
+DATABASE_FILE = "chesscorpy.db"

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+<form action="/register" method="post">
+    Username: <input type="text" name="username"><br>
+    Password: <input type="password" name="password"><br>
+    Email: <input type="text" name="email"><br>
+    Rating (optional): <input type="text" name="rating"><br>
+    Receive email notifications: <input type="checkbox" name="notifications"><br>
+    <input type="submit" value="Register">
+</form>
+{% endblock %}}
