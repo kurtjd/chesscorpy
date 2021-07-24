@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    <h1>{{ user }}'s Game History</h1>
+    <h1>{{ username }}'s Game History</h1>
     <table>
         <tr>
             <td><b>White</b></td>
@@ -17,11 +17,11 @@
         </tr>
     {% for game in games %}
         <tr>
-            <td>{{ game.white_user }}</td>
-            <td>{{ game.black_name }}</td>
+            <td><a href="/profile?id={{ game.player_white_id }}">{{ game.player_white_name }}</a></td>
+            <td><a href="/profile?id={{ game.player_black_id }}">{{ game.player_black_name }}</a></td>
             <td>{{ game.status }}</td>
-            <td>{{ game.result }} hrs</td>
-            <td>{{ game.finish_time }}</td>
+            <td>{{ game.result }}</td>
+            <td>{{ game.move_start_time }}</td>
             <td><a href="game?id={{ game.id }}">View</a></td>
         </tr>
     {% endfor %}

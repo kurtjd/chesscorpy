@@ -356,9 +356,15 @@ def mygames():
 def history():
     """ Displays the game history of a user. """
 
-    user_id = session[constants.USER_SESSION]
+    user_id = request.args.get("id")
     db = connect(constants.DATABASE_FILE)
     db.row_factory = Row
+
+    # Check that the user exists and gets its username.
+    user = db.execute("SELECT username FROM users WHERE id=?", [user_id]).fetchone()
+    if not user:
+        return error("That user does not exist.", 400)
+    username = user[0]
 
     # Select completed games from the given user which are either
     # publically viewable or were played by the logged-in user.
@@ -367,5 +373,20 @@ def history():
                         [session[constants.USER_SESSION], session[constants.USER_SESSION], user_id, user_id]).fetchall()
     games_ = [dict(game_) for game_ in games_]
 
+    for game_ in games_:
+        # Get the names of the players.
+        game_["player_white_name"] = db.execute("SELECT username FROM users WHERE id=?",
+                                                [game_["player_white_id"]]).fetchone()[0]
+        game_["player_black_name"] = db.execute("SELECT username FROM users WHERE id=?",
+                                                [game_["player_black_id"]]).fetchone()[0]
+
+        # Determine the "result" based on who won or if it was a draw.
+        if game_["winner"] == 0:
+            game_["result"] = "1/2 - 1/2"
+        elif game_["winner"] == game_["player_white_id"]:
+            game_["result"] = "1 - 0"
+        else:
+            game_["result"] = "0 - 1"
+
     db.close()
-    return render_template("history.html", games=games_)
+    return render_template("history.html", games=games_, username=username)
