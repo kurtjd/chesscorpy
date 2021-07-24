@@ -1,5 +1,6 @@
 from functools import wraps
 from flask import redirect, session, render_template
+from .constants import USER_SESSION
 
 
 def error(msg, code):
@@ -16,7 +17,13 @@ def login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get("user_id"):
+        if not session.get(USER_SESSION):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
+
+
+def player_colors(white_id, user_id):
+    """ Returns a tuple of colors in the order (user, opponent). """
+
+    return ("White", "black") if white_id == user_id else ("Black", "white")

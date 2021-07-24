@@ -4,7 +4,8 @@ from sqlite3 import connect, Row
 from flask import Flask, render_template, session, redirect, request
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-from chesscorpy.helpers import error, login_required
+from .helpers import error, login_required, player_colors
+import chesscorpy.constants
 
 app = Flask(__name__)
 
@@ -12,24 +13,16 @@ app = Flask(__name__)
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Initialize global constants
-USERNAME_MAX_LEN = 15
-DEFAULT_RATING = 1000
-MIN_RATING = 1
-MAX_RATING = 3000
-PUBLIC_USER_ID = 0
-DATABASE_FILE = "chesscorpy.db"
-
 
 @app.route("/")
 def index():
     """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
 
     # If user is already logged in, render different page.
-    if session.get("user_id") is not None:
-        db = connect(DATABASE_FILE)
+    if session.get(constants.USER_SESSION) is not None:
+        db = connect(constants.DATABASE_FILE)
         db.row_factory = Row
-        user_data = db.execute("SELECT * FROM users WHERE id=?", [session["user_id"]]).fetchone()
+        user_data = db.execute("SELECT * FROM users WHERE id=?", [session[constants.USER_SESSION]]).fetchone()
         user_data.keys()
         db.close()
 
@@ -43,14 +36,14 @@ def register():
     """ Allows a new user to register. """
 
     # If user is logged in, just go back to home page.
-    if session.get("user_id"):
+    if session.get(constants.USER_SESSION):
         return redirect("/")
 
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         email = request.form.get("email")
-        rating = int(request.form.get("rating")) if request.form.get("rating").isdigit() else DEFAULT_RATING
+        rating = int(request.form.get("rating")) if request.form.get("rating").isdigit() else constants.DEFAULT_RATING
         notifications = 0 if not request.form.get("notifications") else 1
 
         # Handle error checking
@@ -61,12 +54,12 @@ def register():
             return error("Please provide a password.", 400)
         elif not email:
             return error("Please provide an email address.", 400)
-        elif len(username) > USERNAME_MAX_LEN:
-            return error(f"Username cannot be greater than {USERNAME_MAX_LEN} characters.", 400)
-        elif not (MIN_RATING <= int(rating) <= MAX_RATING):
-            return error(f"Rating must be a number between {MIN_RATING} and {MAX_RATING}", 400)
+        elif len(username) > constants.USERNAME_MAX_LEN:
+            return error(f"Username cannot be greater than {constants.USERNAME_MAX_LEN} characters.", 400)
+        elif not (constants.MIN_RATING <= int(rating) <= constants.MAX_RATING):
+            return error(f"Rating must be a number between {constants.MIN_RATING} and {constants.MAX_RATING}", 400)
 
-        db = connect(DATABASE_FILE)
+        db = connect(constants.DATABASE_FILE)
         db.row_factory = Row
 
         # Make sure username is not already taken
@@ -80,7 +73,7 @@ def register():
         # Auto login user
         user_id = db.execute("SELECT id FROM users WHERE username=?", [username]).fetchone()
         user_id.keys()
-        session["user_id"] = user_id["id"]
+        session[constants.USER_SESSION] = user_id["id"]
 
         db.commit()
         db.close()
@@ -104,7 +97,7 @@ def login():
         elif not password:
             return error("Please provide a password.", 400)
 
-        db = connect(DATABASE_FILE)
+        db = connect(constants.DATABASE_FILE)
         db.row_factory = Row
 
         # Retrieve user data by username.
@@ -122,7 +115,7 @@ def login():
             return error("Username and password combination is invalid.", 400)
 
         # If valid, create session with user's id
-        session["user_id"] = user["id"]
+        session[constants.USER_SESSION] = user["id"]
 
         db.close()
 
@@ -148,7 +141,7 @@ def opengames():
 
     direct = request.args.get("direct")
 
-    db = connect(DATABASE_FILE)
+    db = connect(constants.DATABASE_FILE)
     db.row_factory = Row
 
     if not direct:
@@ -158,13 +151,14 @@ def opengames():
                           "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
                           "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? "
                           "AND (SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
-                          [PUBLIC_USER_ID, session["user_id"], session["user_id"]]).fetchall()
+                          [constants.PUBLIC_USER_ID, session[constants.USER_SESSION],
+                           session[constants.USER_SESSION]]).fetchall()
     else:
         # Selects all games that are direct requests to the user.
         rows = db.execute("SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
                           "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
                           "game_requests.user_id=users.id WHERE opponent_id=?",
-                          [session["user_id"]]).fetchall()
+                          [session[constants.USER_SESSION]]).fetchall()
     db.close()
     games_ = [dict(row) for row in rows]
 
@@ -206,7 +200,7 @@ def newgame():
         elif minrating > maxrating:
             return error("Please enter a minimum rating that is less than or equal to the maximum rating.", 400)
 
-        db = connect(DATABASE_FILE)
+        db = connect(constants.DATABASE_FILE)
         db.row_factory = Row
 
         # Check that the user someone wants to challenge actually exists if this is not a challenge to the public.
@@ -220,7 +214,7 @@ def newgame():
             opponent_id = opponent_id["id"]
 
             # Don't let dingdongs challenge themselves.
-            if opponent_id == session["user_id"]:
+            if opponent_id == session[constants.USER_SESSION]:
                 return error("You cannot challenge yourself.", 400)
         else:
             opponent_id = 0
@@ -228,7 +222,7 @@ def newgame():
         # Now enter the challenge into the database.
         db.execute("INSERT INTO game_requests (user_id,opponent_id,turn_day_limit,min_rating,max_rating,color,public)"
                    " VALUES(?,?,?,?,?,?,?)",
-                   [session["user_id"], opponent_id, turnlimit, minrating, maxrating, color, public])
+                   [session[constants.USER_SESSION], opponent_id, turnlimit, minrating, maxrating, color, public])
         db.commit()
         db.close()
 
@@ -248,21 +242,22 @@ def start():
     if not request_id or not request_id.isdigit():
         return redirect("/")
 
-    db = connect(DATABASE_FILE)
+    db = connect(constants.DATABASE_FILE)
     cur = db.cursor()
     cur.row_factory = Row
 
-    # Make sure game request exists.
-    game_request = cur.execute("SELECT * FROM game_requests WHERE id=?", [request_id]).fetchone()
+    # Make sure game request exists and that user is authorized to accept the request.
+    game_request = cur.execute("SELECT * FROM game_requests WHERE id=? AND (opponent_id=0 OR opponent_id=?)",
+                               [request_id, session[constants.USER_SESSION]]).fetchone()
     if not game_request:
         return redirect("/")
 
     # Determine which player is which color.
     if game_request["color"] == "white":
         white_id = game_request["user_id"]
-        black_id = session["user_id"]
+        black_id = session[constants.USER_SESSION]
     elif game_request["color"] == "black":
-        white_id = session["user_id"]
+        white_id = session[constants.USER_SESSION]
         black_id = game_request["user_id"]
     else:
         # Assign colors randomly.
@@ -270,9 +265,9 @@ def start():
 
         if random.randint(0, 1) == 1:
             white_id = game_request["user_id"]
-            black_id = session["user_id"]
+            black_id = session[constants.USER_SESSION]
         else:
-            white_id = session["user_id"]
+            white_id = session[constants.USER_SESSION]
             black_id = game_request["user_id"]
 
     # Create game based off data in the game request.
@@ -299,9 +294,9 @@ def game():
     game_id = request.args.get("id")
 
     # Select game if it exists and the user is either a player in the game or the game is public.
-    db = connect(DATABASE_FILE)
+    db = connect(constants.DATABASE_FILE)
     game_data = db.execute("SELECT * FROM games WHERE id=? AND (player_white_id=? OR player_black_id=? OR public=1)",
-                           [game_id, session["user_id"], session["user_id"]]).fetchone()
+                           [game_id, session[constants.USER_SESSION], session[constants.USER_SESSION]]).fetchone()
 
     # Error handling
     if not game_data:
@@ -318,31 +313,24 @@ def mygames():
     """ Displays the active games of the user. """
 
     my_move = request.args.get("my_move")
-    db = connect(DATABASE_FILE)
+    db = connect(constants.DATABASE_FILE)
     db.row_factory = Row
 
     # Either display all active games or only games where it's the user's turn to move.
     if my_move:
         games_ = db.execute("SELECT * FROM games WHERE to_move=? AND (status='no_move' OR status='in_progress')",
-                            [session["user_id"]]).fetchall()
+                            [session[constants.USER_SESSION]]).fetchall()
     else:
         games_ = db.execute("SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
                             "(status='no_move' OR status='in_progress')",
-                            [session["user_id"], session["user_id"]]).fetchall()
-
-    # Convert iterator to dict for easier handling.
+                            [session[constants.USER_SESSION], session[constants.USER_SESSION]]).fetchall()
     games_ = [dict(game_) for game_ in games_]
 
     # Add extra keys into games list for opponent info and user's color.
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
     for game_ in games_:
         # Determine's user's and opponent's colors in game.
-        if game_["player_white_id"] == session["user_id"]:
-            game_["my_color"] = "White"
-            opponent_color = "black"
-        else:
-            game_["my_color"] = "Black"
-            opponent_color = "white"
+        game_["my_color"], opponent_color = player_colors(game_["player_white_id"], session[constants.USER_SESSION])
 
         # Retrieve info about the opponent and determine name of the player who's next to move.
         opponent = db.execute("SELECT id,username FROM users WHERE id=?",
@@ -360,5 +348,24 @@ def mygames():
                                  datetime.datetime.now().replace(microsecond=0))
 
     db.close()
-
     return render_template("mygames.html", games=games_)
+
+
+@app.route("/history")
+@login_required
+def history():
+    """ Displays the game history of a user. """
+
+    user_id = session[constants.USER_SESSION]
+    db = connect(constants.DATABASE_FILE)
+    db.row_factory = Row
+
+    # Select completed games from the given user which are either
+    # publically viewable or were played by the logged-in user.
+    games_ = db.execute("SELECT * FROM games WHERE (public=1 OR player_white_id=? OR player_black_id=?) AND "
+                        "(player_white_id=? OR player_black_id=?) AND status != 'no_move' AND status != 'in_progress'",
+                        [session[constants.USER_SESSION], session[constants.USER_SESSION], user_id, user_id]).fetchall()
+    games_ = [dict(game_) for game_ in games_]
+
+    db.close()
+    return render_template("history.html", games=games_)

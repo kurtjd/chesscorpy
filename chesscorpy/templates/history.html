@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <h1>{{ user }}'s Game History</h1>
+    <table>
+        <tr>
+            <td><b>White</b></td>
+            <td><b>Black</b></td>
+            <td><b>Status</b></td>
+            <td><b>Result</b></td>
+            <td><b>Completion Date</b></td>
+            <td><b>Action</b></td>
+        </tr>
+    {% for game in games %}
+        <tr>
+            <td>{{ game.white_user }}</td>
+            <td>{{ game.black_name }}</td>
+            <td>{{ game.status }}</td>
+            <td>{{ game.result }} hrs</td>
+            <td>{{ game.finish_time }}</td>
+            <td><a href="game?id={{ game.id }}">View</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

@@ -4,7 +4,8 @@ TODO
 -Continue to implement pages
 -Create pretty and interactive front-end
 -Handle automatic losing of game if run out of time
--Handle automatic emailing of running out of time and player moving
+-Handle automatic emailing of running out of time, player moving, or direct game request
+-Use AJAX requests for chessboard
 
 
 Libraries
@@ -71,12 +72,26 @@ user_id
 contents
 timestamp
 
+Game Statuses
+=============
+no_move
+in_progress
+resigned
+abandoned
+checkmate
+stalemate
+
+
 
 Pages
 =====
 history (NOT STARTED)
 -------
 -Allow user to view history of completed public games of a user
+
+settings (NOT STARTED)
+--------
+-Allow user to edit profile
 
 opengames (IN-PROGRESS)
 -----
