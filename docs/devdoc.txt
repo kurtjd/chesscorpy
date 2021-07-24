@@ -4,6 +4,8 @@ TODO
 -Continue to implement pages
 -Create pretty and interactive front-end
 -Allow user to navigate from any page
+-Handle automatic losing of game if run out of time
+-Handle automatic emailing of running out of time and player moving
 
 
 Libraries
@@ -73,15 +75,11 @@ timestamp
 
 Pages
 =====
-challenges (NOT STARTED)
------------
--Allow user to view direct challenges from other users
-
 history (NOT STARTED)
 -------
 -Allow user to view history of completed public games of a user
 
-lobby (IN-PROGRESS)
+opengames (IN-PROGRESS)
 -----
 -Allow user to sort by turn limit, rating, and color
 

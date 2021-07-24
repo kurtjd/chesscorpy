@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Lobby
+    Open Games
 {% endblock %}
 
 {% block main %}
-    <h1>Welcome to the game lobby!</h1>
+    <h1>Open Game Requests</h1>
     <table>
         <tr>
             <td><b>Challenger</b></td>
@@ -27,5 +27,6 @@
     {% endfor %}
     </table>
     <br>
+    <a href="/opengames">View Public Requests</a> | <a href="/opengames?direct=true">View Direct Requests</a> |
     <a href="/newgame">Create Challenge</a> | <a href="/logout">Logout</a>
 {% endblock %}

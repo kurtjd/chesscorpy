@@ -27,7 +27,7 @@ def index():
 
     # If user is already logged in, just redirect to the game lobby.
     if session.get("user_id") is not None:
-        return redirect("/lobby")
+        return redirect("/opengames")
     else:
         return render_template("index.html")
 
@@ -79,7 +79,7 @@ def register():
         db.commit()
         db.close()
 
-        return redirect("/lobby")
+        return redirect("/opengames")
     else:
         return render_template("register.html")
 
@@ -120,7 +120,7 @@ def login():
 
         db.close()
 
-        return redirect("/lobby")
+        return redirect("/opengames")
     else:
         return render_template("login.html")
 
@@ -135,25 +135,34 @@ def logout():
     return redirect("/")
 
 
-@app.route("/lobby")
+@app.route("/opengames")
 @login_required
-def lobby():
-    """ Displays a lobby of public game requests and allows users to sort and accept these requests. """
+def opengames():
+    """ Displays a list of public or private game requests and allows users to sort and accept these requests. """
+
+    direct = request.args.get("direct")
 
     db = connect(DATABASE_FILE)
     db.row_factory = Row
 
-    # Selects all games that the current user has not created themselves, which are challenging the public, and which
-    # have rating requirements meeting the current user's rating.
-    rows = db.execute("SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
-                      "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
-                      "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? "
-                      "AND (SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
-                      [PUBLIC_USER_ID, session["user_id"], session["user_id"]]).fetchall()
+    if not direct:
+        # Selects all games that the current user has not created themselves, which are challenging the public,
+        # and which have rating requirements meeting the current user's rating.
+        rows = db.execute("SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
+                          "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
+                          "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? "
+                          "AND (SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
+                          [PUBLIC_USER_ID, session["user_id"], session["user_id"]]).fetchall()
+    else:
+        # Selects all games that are direct requests to the user.
+        rows = db.execute("SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
+                          "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
+                          "game_requests.user_id=users.id WHERE opponent_id=?",
+                          [session["user_id"]]).fetchall()
     db.close()
-    games = [dict(row) for row in rows]
+    games_ = [dict(row) for row in rows]
 
-    return render_template("lobby.html", games=games)
+    return render_template("opengames.html", games=games_)
 
 
 @app.route("/newgame", methods=["GET", "POST"])
@@ -217,7 +226,7 @@ def newgame():
         db.commit()
         db.close()
 
-        return redirect("/lobby")
+        return redirect("/opengames")
     else:
         return render_template("newgame.html")
 
@@ -308,19 +317,19 @@ def mygames():
 
     # Either display all active games or only games where it's the user's turn to move.
     if my_move:
-        games = db.execute("SELECT * FROM games WHERE to_move=? AND (status='no_move' OR status='in_progress')",
-                           [session["user_id"]]).fetchall()
+        games_ = db.execute("SELECT * FROM games WHERE to_move=? AND (status='no_move' OR status='in_progress')",
+                            [session["user_id"]]).fetchall()
     else:
-        games = db.execute("SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
-                           "(status='no_move' OR status='in_progress')",
-                           [session["user_id"], session["user_id"]]).fetchall()
+        games_ = db.execute("SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
+                            "(status='no_move' OR status='in_progress')",
+                            [session["user_id"], session["user_id"]]).fetchall()
 
     # Convert iterator to dict for easier handling.
-    games = [dict(game_) for game_ in games]
+    games_ = [dict(game_) for game_ in games_]
 
     # Add extra keys into games list for opponent info and user's color.
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
-    for game_ in games:
+    for game_ in games_:
         # Determine's user's and opponent's colors in game.
         if game_["player_white_id"] == session["user_id"]:
             game_["my_color"] = "White"
@@ -346,4 +355,4 @@ def mygames():
 
     db.close()
 
-    return render_template("mygames.html", games=games)
+    return render_template("mygames.html", games=games_)
