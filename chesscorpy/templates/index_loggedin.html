@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Home
+{% endblock %}
+
+{% block main %}
+    <h3><b>Welcome {{ user_data.username }}!</b></h3>
+    <img src="/static/chessboard.png"><br>
+    <a href="/mygames">View My Active Games</a> |
+    <a href="/newgame">Create Game Request</a> |
+    <a href="/opengames">View Game Requests</a> |
+    <a href="/logout">Logout</a>
+{% endblock %}

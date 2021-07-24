@@ -25,9 +25,15 @@ DATABASE_FILE = "chesscorpy.db"
 def index():
     """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
 
-    # If user is already logged in, just redirect to the game lobby.
+    # If user is already logged in, render different page.
     if session.get("user_id") is not None:
-        return redirect("/opengames")
+        db = connect(DATABASE_FILE)
+        db.row_factory = Row
+        user_data = db.execute("SELECT * FROM users WHERE id=?", [session["user_id"]]).fetchone()
+        user_data.keys()
+        db.close()
+
+        return render_template("/index_loggedin.html", user_data=user_data)
     else:
         return render_template("index.html")
 
@@ -79,7 +85,7 @@ def register():
         db.commit()
         db.close()
 
-        return redirect("/opengames")
+        return redirect("/")
     else:
         return render_template("register.html")
 
@@ -120,7 +126,7 @@ def login():
 
         db.close()
 
-        return redirect("/opengames")
+        return redirect("/")
     else:
         return render_template("login.html")
 

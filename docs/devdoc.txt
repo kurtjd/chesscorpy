@@ -87,10 +87,6 @@ game (IN-PROGRESS)
 ----
 -Everything
 
-index (IN-PROGRESS)
------
--Show different home page if logged in
-
 newgame (IN-PROGRESS)
 -------
 -Make game request creation more user-friendly (simplify public vs direct game request)
@@ -98,6 +94,9 @@ newgame (IN-PROGRESS)
 register  (IN-PROGRESS)
 --------
 -Error handling
+
+index (COMPLETE)
+-----
 
 login (COMPLETE)
 -----
