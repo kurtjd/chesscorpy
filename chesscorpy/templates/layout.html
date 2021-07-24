@@ -7,6 +7,18 @@
 </head>
 <body>
     <center>
+        <div>
+            {% if session.user_id %}
+                <a href="/">Home</a> |
+                <a href="/mygames">My Active Games</a> |
+                <a href="/opengames">Lobby</a> |
+                <a href="/logout">Logout</a>
+            {% else %}
+                <a href="/login">Login</a> |
+                <a href="/register">Register</a>
+            {% endif %}
+        </div>
+        <br>
         {% block main %}{% endblock %}
     </center>
 </body>

@@ -3,7 +3,6 @@ TODO
 -Implement code TODO
 -Continue to implement pages
 -Create pretty and interactive front-end
--Allow user to navigate from any page
 -Handle automatic losing of game if run out of time
 -Handle automatic emailing of running out of time and player moving
 
