@@ -1,5 +1,5 @@
 import random
-import time
+import datetime
 from sqlite3 import connect, Row
 from flask import Flask, render_template, session, redirect, request
 from flask_session import Session
@@ -68,7 +68,7 @@ def register():
             return error("Username already exists", 400)
 
         # Finally create new user in database
-        db.execute("INSERT INTO users (username, password, email, rating, notifications) VALUES(?, ?, ?, ?, ?)",
+        db.execute("INSERT INTO users (username,password,email,rating,notifications) VALUES(?,?,?,?,?)",
                    [username, generate_password_hash(password), email, rating, notifications])
 
         # Auto login user
@@ -93,7 +93,6 @@ def login():
         password = request.form.get("password")
 
         # Handle error checking
-        # TODO: More error checking
         if not username:
             return error("Please provide a username.", 400)
         elif not password:
@@ -212,8 +211,8 @@ def newgame():
             opponent_id = 0
 
         # Now enter the challenge into the database.
-        db.execute("INSERT INTO game_requests (user_id, opponent_id, turn_day_limit,"
-                   "min_rating, max_rating, color, public) VALUES(?, ?, ?, ?, ?, ?, ?)",
+        db.execute("INSERT INTO game_requests (user_id,opponent_id,turn_day_limit,min_rating,max_rating,color,public)"
+                   " VALUES(?,?,?,?,?,?,?)",
                    [session["user_id"], opponent_id, turnlimit, minrating, maxrating, color, public])
         db.commit()
         db.close()
@@ -252,7 +251,7 @@ def start():
         black_id = game_request["user_id"]
     else:
         # Assign colors randomly.
-        random.seed(time.time())
+        random.seed(datetime.datetime.now().timestamp())
 
         if random.randint(0, 1) == 1:
             white_id = game_request["user_id"]
@@ -263,8 +262,8 @@ def start():
 
     # Create game based off data in the game request.
     game_request.keys()
-    cur.execute("INSERT INTO games (player_white_id,player_black_id,turn_day_limit,public) VALUES(?,?,?,?)",
-                [white_id, black_id, game_request["turn_day_limit"], game_request["public"]])
+    cur.execute("INSERT INTO games (player_white_id,player_black_id,turn_day_limit,to_move,public) VALUES(?,?,?,?,?)",
+                [white_id, black_id, game_request["turn_day_limit"], white_id, game_request["public"]])
     game_id = cur.lastrowid
 
     # Delete game request from database.
@@ -296,3 +295,55 @@ def game():
     db.close()
 
     return render_template("game.html")
+
+
+@app.route("/mygames")
+@login_required
+def mygames():
+    """ Displays the active games of the user. """
+
+    my_move = request.args.get("my_move")
+    db = connect(DATABASE_FILE)
+    db.row_factory = Row
+
+    # Either display all active games or only games where it's the user's turn to move.
+    if my_move:
+        games = db.execute("SELECT * FROM games WHERE to_move=? AND (status='no_move' OR status='in_progress')",
+                           [session["user_id"]]).fetchall()
+    else:
+        games = db.execute("SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
+                           "(status='no_move' OR status='in_progress')",
+                           [session["user_id"], session["user_id"]]).fetchall()
+
+    # Convert iterator to dict for easier handling.
+    games = [dict(game_) for game_ in games]
+
+    # Add extra keys into games list for opponent info and user's color.
+    # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
+    for game_ in games:
+        # Determine's user's and opponent's colors in game.
+        if game_["player_white_id"] == session["user_id"]:
+            game_["my_color"] = "White"
+            opponent_color = "black"
+        else:
+            game_["my_color"] = "Black"
+            opponent_color = "white"
+
+        # Retrieve info about the opponent and determine name of the player who's next to move.
+        opponent = db.execute("SELECT id,username FROM users WHERE id=?",
+                              [game_[f"player_{opponent_color}_id"]]).fetchone()
+        opponent.keys()
+        game_["opponent_name"] = opponent["username"]
+        game_["opponent_id"] = opponent["id"]
+        game_["player_to_move"] = db.execute("SELECT username FROM users WHERE id=?", [game_["to_move"]]).fetchone()[0]
+
+        # Determines how much time left for the player who's turn it is to move.
+        # Works by getting the time the move started, adds the turn limit to that time,
+        # and then subtracts the current time from the total.
+        game_["time_to_move"] = (datetime.datetime.strptime(game_["move_start_time"], "%Y-%m-%d %H:%M:%S") +
+                                 (datetime.timedelta(days=game_["turn_day_limit"])) -
+                                 datetime.datetime.now().replace(microsecond=0))
+
+    db.close()
+
+    return render_template("mygames.html", games=games)

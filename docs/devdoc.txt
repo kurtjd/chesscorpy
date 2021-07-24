@@ -1,3 +1,11 @@
+TODO
+====
+-Implement code TODO
+-Continue to implement pages
+-Create pretty and interactive front-end
+-Allow user to navigate from any page
+
+
 Libraries
 =========
 Python
@@ -16,7 +24,7 @@ CSS
 Bootstrap and/or tailwind
 
 
-Database Tables
+Database Tables (COMPLETE)
 ===============
 users
 -----
@@ -58,55 +66,49 @@ messages
 --------
 id
 game_id
-player1_id
-player2_id
+user_id
+contents
 timestamp
 
 
 Pages
 =====
-index
------
--Show welcome screen and allow user to register or login
-
-register
---------
--Allow user to register
-
-login
------
--Allow user to login
-
-logout
-------
--Logsout user
-
-history
--------
--Allow user to view history of public games of a user
-
-newgame
--------
--Allows user to create a new game directly with another user or in lobby
--Allows user to set turn day limit and which ratings can see the game
--Allows user to pick color
-
-lobby
------
--Allows user to view open public games
--Allows user to sort by turn limit, rating, and color
-
-challenges
+challenges (NOT STARTED)
 -----------
--Allows user to view direct challenges from other users
+-Allow user to view direct challenges from other users
 
-game
-----
--Allows user to view current state of a game they are playing and to make moves
--Allows user to select a piece and have legal moves highlighted
--Allows user to resign or offer draw
--Allows players to chat
+history (NOT STARTED)
+-------
+-Allow user to view history of completed public games of a user
 
-start
+lobby (IN-PROGRESS)
 -----
--Creates a game based off data in game_request
+-Allow user to sort by turn limit, rating, and color
+
+game (IN-PROGRESS)
+----
+-Everything
+
+index (IN-PROGRESS)
+-----
+-Show different home page if logged in
+
+newgame (IN-PROGRESS)
+-------
+-Make game request creation more user-friendly (simplify public vs direct game request)
+
+register  (IN-PROGRESS)
+--------
+-Error handling
+
+login (COMPLETE)
+-----
+
+logout (COMPLETE)
+------
+
+start (COMPLETE)
+-----
+
+mygames (COMPLETE)
+-------

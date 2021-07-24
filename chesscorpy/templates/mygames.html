@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    My Games
+{% endblock %}
+
+{% block main %}
+    <h1>My Games In-Progress</h1>
+    <table>
+        <tr>
+            <td><b>My Color</b></td>
+            <td><b>Opponent</b></td>
+            <td><b>Player to Move</b></td>
+            <td><b>Time to Move</b></td>
+            <td><b>Turn Limit</b></td>
+            <td><b>Game Start Time</b></td>
+            <td><b>View Game?</b></td>
+        </tr>
+    {% for game in games %}
+        <tr>
+            <td>{{ game.my_color }}</td>
+            <td><a href="/profile?id={{ game.opponent_id }}">{{ game.opponent_name }}</a></td>
+            <td>{{ game.player_to_move }}</td>
+            <td>{{ game.time_to_move }} hrs</td>
+            <td>{{ game.turn_day_limit }} day(s)</td>
+            <td>{{ game.timestamp }}</td>
+            <td><a href="/game?id={{ game.id }}">View</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br>
+    <a href="/mygames">View All</a> | <a href="/mygames?my_move=true">View Only My Turn</a>
+{% endblock %}
