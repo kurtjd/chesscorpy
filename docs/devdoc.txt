@@ -85,10 +85,6 @@ stalemate
 
 Pages
 =====
-history (NOT STARTED)
--------
--Allow user to view history of completed public games of a user
-
 settings (NOT STARTED)
 --------
 -Allow user to edit profile
@@ -122,4 +118,7 @@ start (COMPLETE)
 -----
 
 mygames (COMPLETE)
+-------
+
+history (COMPLETE)
 -------

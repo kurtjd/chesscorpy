@@ -87,6 +87,10 @@ def register():
 def login():
     """ Allows a user to login. """
 
+    # If user is logged in, just go back to home page.
+    if session.get(constants.USER_SESSION):
+        return redirect("/")
+
     if request.method == "POST":
         username = request.form.get("username").lower()
         password = request.form.get("password")
