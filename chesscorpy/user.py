@@ -3,11 +3,24 @@ from werkzeug.security import generate_password_hash
 from . import constants, database
 
 
-def get_data(userid, fields='*'):
+def get_data_by_id(userid, fields='*'):
     """ Retrieves the data of a user with the given id. """
 
     query = f"SELECT {','.join(fields)} FROM users WHERE id = ? LIMIT 1"
     query_args = [userid]
+
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+
+
+def get_data_by_name(username, fields='*', case_sensitive=False):
+    """ Retrieves the data of a user with the given name. """
+
+    if not case_sensitive:
+        query = f"SELECT {','.join(fields)} FROM users WHERE LOWER(username) = ? LIMIT 1"
+        query_args = [username.lower()]
+    else:
+        query = f"SELECT {','.join(fields)} FROM users WHERE username = ? LIMIT 1"
+        query_args = [username]
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
 

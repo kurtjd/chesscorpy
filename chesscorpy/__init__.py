@@ -19,7 +19,7 @@ def index():
 
     # If user is already logged in, render different page.
     if user.logged_in():
-        return render_template("/index_loggedin.html", user_data=user.get_data(user.get_logged_in_id()))
+        return render_template("/index_loggedin.html", user_data=user.get_data_by_id(user.get_logged_in_id()))
     else:
         return render_template("index.html")
 
@@ -68,7 +68,7 @@ def login():
         return redirect("/")
 
     if request.method == "POST":
-        username = request.form.get("username").lower()
+        username = request.form.get("username")
         password = request.form.get("password")
 
         errors = handle_errors.for_login_input(username, password)
@@ -76,8 +76,9 @@ def login():
             return errors
 
         # Retrieve user data by username.
-        user_ = database.sql_exec(constants.DATABASE_FILE,
-                                  "SELECT id,username,password FROM users WHERE LOWER(username)=?", [username], False)
+        # user_ = database.sql_exec(constants.DATABASE_FILE,
+                                  # "SELECT id,username,password FROM users WHERE LOWER(username)=?", [username], False)
+        user_ = user.get_data_by_name(username, ("id", "username", "password"))
 
         errors = handle_errors.for_login_sql(user_, password)
         if errors:
