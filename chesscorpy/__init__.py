@@ -64,7 +64,7 @@ def login():
     """ Allows a user to login. """
 
     # If user is logged in, just go back to home page.
-    if session.get(constants.USER_SESSION):
+    if user.logged_in():
         return redirect("/")
 
     if request.method == "POST":
@@ -84,7 +84,7 @@ def login():
             return errors
 
         # If valid, create session with user's id
-        session[constants.USER_SESSION] = user_["id"]
+        user.create_session(user_["id"])
 
         return redirect("/")
     else:
