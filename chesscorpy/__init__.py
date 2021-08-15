@@ -3,7 +3,7 @@ import datetime
 import flask_session
 from flask import Flask, render_template, session, redirect, request
 from werkzeug.security import generate_password_hash
-from . import constants, helpers, database, input_validation, handle_errors
+from . import constants, helpers, database, input_validation, handle_errors, user
 
 # Initialize Flask
 app = Flask(__name__)
@@ -20,7 +20,7 @@ def index():
 
     # If user is already logged in, render different page.
     if session.get(constants.USER_SESSION) is not None:
-        user_data = helpers.get_user_data(session[constants.USER_SESSION])
+        user_data = user.get_data(session[constants.USER_SESSION])
 
         return render_template("/index_loggedin.html", user_data=user_data)
     else:
@@ -32,7 +32,7 @@ def register():
     """ Allows a new user to register. """
 
     # If user is logged in, just go back to home page.
-    if session.get(constants.USER_SESSION):
+    if user.logged_in():
         return redirect("/")
 
     if request.method == "POST":
@@ -82,15 +82,15 @@ def login():
             return errors
 
         # Retrieve user data by username.
-        user = database.sql_exec(constants.DATABASE_FILE,
-                                 "SELECT id,username,password FROM users WHERE LOWER(username)=?", [username], False)
+        user_ = database.sql_exec(constants.DATABASE_FILE,
+                                  "SELECT id,username,password FROM users WHERE LOWER(username)=?", [username], False)
 
-        errors = handle_errors.for_login_sql(user, password)
+        errors = handle_errors.for_login_sql(user_, password)
         if errors:
             return errors
 
         # If valid, create session with user's id
-        session[constants.USER_SESSION] = user["id"]
+        session[constants.USER_SESSION] = user_["id"]
 
         return redirect("/")
     else:
@@ -303,12 +303,12 @@ def history():
     user_id = request.args.get("id")
 
     # Check that the user exists and get its username.
-    user = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?", [user_id], False, False)
+    user_ = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?", [user_id], False, False)
 
-    if not user:
+    if not user_:
         return helpers.error("That user does not exist.", 400)
 
-    username = user[0]
+    username = user_[0]
 
     # Select completed games from the given user which are either
     # publically viewable or were played by the logged-in user.

@@ -1,6 +1,6 @@
 from functools import wraps
-from flask import redirect, session, render_template
-from . import constants, database
+from flask import redirect, render_template
+from . import user
 
 
 def error(msg, code):
@@ -17,17 +17,10 @@ def login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get(constants.USER_SESSION):
+        if not user.logged_in():
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
-
-
-def get_user_data(userid, fields='*'):
-    """ Retrieves the data of a user with the given id. """
-
-    return database.sql_exec(constants.DATABASE_FILE, f"SELECT {','.join(fields)} FROM users WHERE id=? LIMIT 1",
-                             [userid], False)
 
 
 def player_colors(white_id, user_id):
