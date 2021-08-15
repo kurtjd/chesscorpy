@@ -2,7 +2,6 @@ import random
 import datetime
 import flask_session
 from flask import Flask, render_template, session, redirect, request
-from werkzeug.security import generate_password_hash
 from . import constants, helpers, database, input_validation, handle_errors, user
 
 # Initialize Flask
@@ -19,7 +18,7 @@ def index():
     """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
 
     # If user is already logged in, render different page.
-    if session.get(constants.USER_SESSION) is not None:
+    if user.logged_in():
         user_data = user.get_data(session[constants.USER_SESSION])
 
         return render_template("/index_loggedin.html", user_data=user_data)
@@ -52,9 +51,7 @@ def register():
             return errors
 
         # Finally create new user in database
-        database.sql_exec(constants.DATABASE_FILE, "INSERT INTO users (username,password,email,rating,notifications) "
-                                                   "VALUES(?,?,?,?,?)", [username, generate_password_hash(password),
-                                                                         email, rating, notifications], False, False)
+        user.create(username, password, email, rating, notifications)
 
         # Auto login user
         user_id = database.sql_exec(constants.DATABASE_FILE, "SELECT id FROM users WHERE username=?", [username], False)
