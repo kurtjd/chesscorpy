@@ -20,8 +20,7 @@ def index():
 
     # If user is already logged in, render different page.
     if session.get(constants.USER_SESSION) is not None:
-        user_data = database.sql_exec(constants.DATABASE_FILE, "SELECT * FROM users WHERE id=?",
-                                      [session[constants.USER_SESSION]], False)
+        user_data = helpers.get_user_data(session[constants.USER_SESSION])
 
         return render_template("/index_loggedin.html", user_data=user_data)
     else:
