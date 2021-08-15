@@ -60,3 +60,9 @@ def create_session(userid):
     """ Creates a session for the given user id. """
 
     session[constants.USER_SESSION] = userid
+
+
+def delete_session():
+    """ Deletes the current user session. """
+
+    session.clear()

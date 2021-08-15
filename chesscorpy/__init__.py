@@ -76,8 +76,6 @@ def login():
             return errors
 
         # Retrieve user data by username.
-        # user_ = database.sql_exec(constants.DATABASE_FILE,
-                                  # "SELECT id,username,password FROM users WHERE LOWER(username)=?", [username], False)
         user_ = user.get_data_by_name(username, ("id", "username", "password"))
 
         errors = handle_errors.for_login_sql(user_, password)
@@ -98,7 +96,7 @@ def logout():
     """ Logs a user out. """
 
     # Delete user's session and return to homepage.
-    session.clear()
+    user.delete_session()
     return redirect("/")
 
 
