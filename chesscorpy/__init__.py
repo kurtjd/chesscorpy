@@ -19,9 +19,7 @@ def index():
 
     # If user is already logged in, render different page.
     if user.logged_in():
-        user_data = user.get_data(session[constants.USER_SESSION])
-
-        return render_template("/index_loggedin.html", user_data=user_data)
+        return render_template("/index_loggedin.html", user_data=user.get_data(user.get_logged_in_id()))
     else:
         return render_template("index.html")
 

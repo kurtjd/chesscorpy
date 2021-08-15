@@ -35,3 +35,9 @@ def auto_login(username):
 
     user_id = database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
     session[constants.USER_SESSION] = user_id["id"]
+
+
+def get_logged_in_id():
+    """ Gets the id of the currently logged-in user. """
+
+    return session[constants.USER_SESSION]
