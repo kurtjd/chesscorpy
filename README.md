@@ -1,4 +1,4 @@
-Correspondence Chess
+ChessCorPy
 ====================
 A simple web-based correspondence chess application written in Python+Flask.
 
