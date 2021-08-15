@@ -12,7 +12,7 @@ def get_data_by_id(userid, fields='*'):
     return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
 
 
-def get_data_by_name(username, fields='*', case_sensitive=False):
+def get_data_by_name(username, fields=('*',), case_sensitive=False):
     """ Retrieves the data of a user with the given name. """
 
     if not case_sensitive:

@@ -3,6 +3,7 @@ from sqlite3 import connect, Row
 
 def sql_exec(db, query, query_args, get_all=True, get_keys=True, get_last_row=False):
     """ Performs queries on a database. """
+    # TODO: Remove get_keys option; Possibly remove get_all option too.
 
     db = connect(db)
     cur = db.cursor()

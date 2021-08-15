@@ -1,7 +1,7 @@
 import random
 import datetime
 import flask_session
-from flask import Flask, render_template, session, redirect, request
+from flask import Flask, render_template, redirect, request
 from . import constants, helpers, database, input_validation, handle_errors, user
 
 # Initialize Flask
@@ -76,7 +76,7 @@ def login():
             return errors
 
         # Retrieve user data by username.
-        user_ = user.get_data_by_name(username, ("id", "username", "password"))
+        user_ = user.get_data_by_name(username, ["id", "username", "password"])
 
         errors = handle_errors.for_login_sql(user_, password)
         if errors:
@@ -113,14 +113,15 @@ def opengames():
                                  "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
                                  "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? AND "
                                  "(SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
-                                 [constants.PUBLIC_USER_ID, session[constants.USER_SESSION],
-                                  session[constants.USER_SESSION]], True, False)
+                                 [constants.PUBLIC_USER_ID] + [user.get_logged_in_id()] * 2,
+                                 True, False)
     else:
         rows = database.sql_exec(constants.DATABASE_FILE,
                                  "SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
                                  "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON"
                                  " game_requests.user_id=users.id WHERE opponent_id=?",
-                                 [session[constants.USER_SESSION]], True, False)
+                                 [user.get_logged_in_id()],
+                                 True, False)
 
     return render_template("opengames.html", games=rows)
 
@@ -144,8 +145,7 @@ def newgame():
 
         # Check that the user someone wants to challenge actually exists if this is not a challenge to the public.
         if username != "public":
-            opponent_id = database.sql_exec(constants.DATABASE_FILE, "SELECT id FROM users WHERE LOWER(username)=?",
-                                            [username], False)
+            opponent_id = user.get_data_by_name(username, ["id"])
 
             if not opponent_id:
                 return helpers.error("Please enter a valid user to challenge.", 400)
@@ -153,7 +153,7 @@ def newgame():
             opponent_id = opponent_id["id"]
 
             # Don't let dingdongs challenge themselves.
-            if opponent_id == session[constants.USER_SESSION]:
+            if opponent_id == user.get_logged_in_id():
                 return helpers.error("You cannot challenge yourself.", 400)
         else:
             opponent_id = constants.PUBLIC_USER_ID
@@ -162,8 +162,7 @@ def newgame():
         database.sql_exec(constants.DATABASE_FILE,
                           "INSERT INTO game_requests (user_id,opponent_id,turn_day_limit,"
                           "min_rating,max_rating,color,public) VALUES(?,?,?,?,?,?,?)",
-                          [session[constants.USER_SESSION], opponent_id, turnlimit,
-                           minrating, maxrating, color, public])
+                          [user.get_logged_in_id(), opponent_id, turnlimit, minrating, maxrating, color, public])
 
         return redirect("/opengames")
     else:
@@ -184,7 +183,8 @@ def start():
     # Make sure game request exists and that user is authorized to accept the request.
     game_request = database.sql_exec(constants.DATABASE_FILE,
                                      "SELECT * FROM game_requests WHERE id=? AND (opponent_id=0 OR opponent_id=?)",
-                                     [request_id, session[constants.USER_SESSION]], False)
+                                     [request_id, user.get_logged_in_id()],
+                                     False)
 
     if not game_request:
         return redirect("/")
@@ -192,9 +192,9 @@ def start():
     # Determine which player is which color.
     if game_request["color"] == "white":
         white_id = game_request["user_id"]
-        black_id = session[constants.USER_SESSION]
+        black_id = user.get_logged_in_id()
     elif game_request["color"] == "black":
-        white_id = session[constants.USER_SESSION]
+        white_id = user.get_logged_in_id()
         black_id = game_request["user_id"]
     else:
         # Assign colors randomly.
@@ -202,9 +202,9 @@ def start():
 
         if random.randint(0, 1) == 1:
             white_id = game_request["user_id"]
-            black_id = session[constants.USER_SESSION]
+            black_id = user.get_logged_in_id()
         else:
-            white_id = session[constants.USER_SESSION]
+            white_id = user.get_logged_in_id()
             black_id = game_request["user_id"]
 
     # Create game based off data in the game request.
@@ -212,7 +212,8 @@ def start():
                                 "INSERT INTO games (player_white_id,player_black_id,turn_day_limit,to_move,public) "
                                 "VALUES(?,?,?,?,?)",
                                 [white_id, black_id, game_request["turn_day_limit"],
-                                 white_id, game_request["public"]], False, False, True)
+                                 white_id, game_request["public"]],
+                                False, False, True)
 
     # Delete game request from database.
     database.sql_exec(constants.DATABASE_FILE, "DELETE FROM game_requests WHERE id=?", [request_id])
@@ -232,7 +233,8 @@ def game():
     game_data = database.sql_exec(constants.DATABASE_FILE,
                                   "SELECT * FROM games WHERE id=? AND (player_white_id=? OR "
                                   "player_black_id=? OR public=1)",
-                                  [game_id, session[constants.USER_SESSION], session[constants.USER_SESSION]], False)
+                                  [game_id] + [user.get_logged_in_id()] * 2,
+                                  False)
 
     # Error handling
     if not game_data:
@@ -252,30 +254,28 @@ def mygames():
     if my_move:
         games_ = database.sql_exec(constants.DATABASE_FILE,
                                    "SELECT * FROM games WHERE to_move=? AND "
-                                   "(status='no_move' OR status='in_progress')", [session[constants.USER_SESSION]],
+                                   "(status='no_move' OR status='in_progress')",
+                                   [user.get_logged_in_id()],
                                    True, False)
     else:
         games_ = database.sql_exec(constants.DATABASE_FILE,
                                    "SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
                                    "(status='no_move' OR status='in_progress')",
-                                   [session[constants.USER_SESSION], session[constants.USER_SESSION]], True, False)
+                                   [user.get_logged_in_id()] * 2,
+                                   True, False)
 
     # Add extra keys into games list for opponent info and user's color.
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
     games_ = [dict(game_) for game_ in games_]
     for game_ in games_:
         # Determine's user's and opponent's colors in game.
-        game_["my_color"], opponent_color = helpers.player_colors(game_["player_white_id"],
-                                                                  session[constants.USER_SESSION])
+        game_["my_color"], opponent_color = helpers.player_colors(game_["player_white_id"], user.get_logged_in_id())
 
-        opponent = database.sql_exec(constants.DATABASE_FILE, "SELECT id,username FROM users WHERE id=?",
-                                     [game_[f"player_{opponent_color}_id"]], False)
+        opponent = user.get_data_by_id(game_[f"player_{opponent_color}_id"], ["id", "username"])
 
         game_["opponent_name"] = opponent["username"]
         game_["opponent_id"] = opponent["id"]
-
-        game_["player_to_move"] = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?",
-                                                    [game_["to_move"]], False, False)[0]
+        game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])[0]
 
         # Determines how much time left for the player who's turn it is to move.
         # Works by getting the time the move started, adds the turn limit to that time,
@@ -284,7 +284,6 @@ def mygames():
                                  (datetime.timedelta(days=game_["turn_day_limit"])) -
                                  datetime.datetime.now().replace(microsecond=0))
 
-    # db.close()
     return render_template("mygames.html", games=games_)
 
 
@@ -296,8 +295,7 @@ def history():
     user_id = request.args.get("id")
 
     # Check that the user exists and get its username.
-    user_ = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?", [user_id], False, False)
-
+    user_ = user.get_data_by_id(user_id, ["username"])
     if not user_:
         return helpers.error("That user does not exist.", 400)
 
@@ -308,18 +306,15 @@ def history():
     games_ = database.sql_exec(constants.DATABASE_FILE,
                                "SELECT * FROM games WHERE (public=1 OR player_white_id=? OR player_black_id=?) AND "
                                "(player_white_id=? OR player_black_id=?) AND status!='no_move' AND "
-                               "status!='in_progress'", [session[constants.USER_SESSION],
-                                                         session[constants.USER_SESSION], user_id, user_id],
+                               "status!='in_progress'",
+                               [user.get_logged_in_id()] * 2 + [user_id] * 2,
                                True, False)
 
     # Go through each game and change/add some data to make it more human readable.
     games_ = [dict(game_) for game_ in games_]
     for game_ in games_:
-        # Get the names of the players.
-        game_["player_white_name"] = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?",
-                                                       [game_["player_white_id"]], False, False)[0]
-        game_["player_black_name"] = database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE id=?",
-                                                       [game_["player_black_id"]], False, False)[0]
+        game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])[0]
+        game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])[0]
 
         # Determine the "result" based on who won or if it was a draw.
         if game_["winner"] == 0:
