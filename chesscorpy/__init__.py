@@ -130,7 +130,7 @@ def opengames():
     """ Displays a list of public or private game requests and allows users to sort and accept these requests. """
 
     # Selects all games that the current user has not created themselves, which are challenging the public,
-    # and which have rating requirements meeting the current user's rating.
+    # which have rating requirements meeting the current user's rating, OR are direct requests.
     if not request.args.get("direct"):
         rows = database.sql_exec(constants.DATABASE_FILE,
                                  "SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
@@ -139,8 +139,6 @@ def opengames():
                                  "(SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
                                  [constants.PUBLIC_USER_ID, session[constants.USER_SESSION],
                                   session[constants.USER_SESSION]], True, False)
-
-    # Selects all games that are direct requests to the user.
     else:
         rows = database.sql_exec(constants.DATABASE_FILE,
                                  "SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
