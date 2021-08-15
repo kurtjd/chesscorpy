@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import redirect, session, render_template
-from .constants import USER_SESSION
+from . import constants
 
 
 def error(msg, code):
@@ -17,7 +17,7 @@ def login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get(USER_SESSION):
+        if not session.get(constants.USER_SESSION):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
