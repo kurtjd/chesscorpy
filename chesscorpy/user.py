@@ -25,3 +25,13 @@ def create(username, password, email, rating, notifications):
     query_args = [username, generate_password_hash(password), email, rating, notifications]
 
     database.sql_exec(constants.DATABASE_FILE, query, query_args, False, False)
+
+
+def auto_login(username):
+    """ Automatically logs in a user given a username. """
+
+    query = "SELECT id FROM users WHERE username=?"
+    query_args = [username]
+
+    user_id = database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    session[constants.USER_SESSION] = user_id["id"]

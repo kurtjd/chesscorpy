@@ -54,8 +54,7 @@ def register():
         user.create(username, password, email, rating, notifications)
 
         # Auto login user
-        user_id = database.sql_exec(constants.DATABASE_FILE, "SELECT id FROM users WHERE username=?", [username], False)
-        session[constants.USER_SESSION] = user_id["id"]
+        user.auto_login(username)
 
         return redirect("/")
     else:
