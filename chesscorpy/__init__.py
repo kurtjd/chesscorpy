@@ -198,7 +198,7 @@ def newgame():
             if opponent_id == session[constants.USER_SESSION]:
                 return helpers.error("You cannot challenge yourself.", 400)
         else:
-            opponent_id = 0
+            opponent_id = constants.PUBLIC_USER_ID
 
         # Now enter the challenge into the database.
         database.sql_exec(constants.DATABASE_FILE,
