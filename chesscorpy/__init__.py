@@ -299,6 +299,7 @@ def game():
 
     # Select game if it exists and the user is either a player in the game or the game is public.
     db = connect(constants.DATABASE_FILE)
+    db.row_factory = Row
     game_data = db.execute("SELECT * FROM games WHERE id=? AND (player_white_id=? OR player_black_id=? OR public=1)",
                            [game_id, session[constants.USER_SESSION], session[constants.USER_SESSION]]).fetchone()
 
@@ -306,9 +307,10 @@ def game():
     if not game_data:
         return redirect("/")
 
+    game_data.keys()
     db.close()
 
-    return render_template("game.html")
+    return render_template("game.html", game_data=game_data)
 
 
 @app.route("/mygames")
