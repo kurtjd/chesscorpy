@@ -207,7 +207,7 @@ def mygames():
 
         game_["opponent_name"] = opponent["username"]
         game_["opponent_id"] = opponent["id"]
-        game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])[0]
+        game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])["username"]
         game_["time_to_move"] = helpers.get_turn_time_left(game_["move_start_time"], game_["turn_day_limit"])
 
     return render_template("mygames.html", games=games_)
@@ -224,15 +224,15 @@ def history():
     if not user_:
         return helpers.error("That user does not exist.", 400)
 
-    username = user_[0]
+    username = user_["username"]
 
     games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
     # Go through each game and change/add some data to make it more human readable.
     games_ = [dict(game_) for game_ in games_]
     for game_ in games_:
-        game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])[0]
-        game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])[0]
+        game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])["username"]
+        game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])["username"]
 
         # Determine the "result" based on who won or if it was a draw.
         if game_["winner"] == 0:
