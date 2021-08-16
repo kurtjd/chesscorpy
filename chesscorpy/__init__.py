@@ -6,7 +6,6 @@ from . import constants, helpers, database, input_validation, handle_errors, use
 
 
 app = Flask(__name__)
-
 app.config["SESSION_TYPE"] = "filesystem"
 flask_session.Session(app)
 
