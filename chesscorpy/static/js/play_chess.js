@@ -1,24 +1,41 @@
+function end_game(msg)
+{
+    alert(msg)
+}
+
+function check_game()
+{
+    if (game.in_checkmate())
+        end_game("Game over. Checkmate!")
+    else if (game.in_draw())
+        end_game("Game over. Draw!")
+    else if (game.in_stalemate())
+        end_game("Game over. Stalemate!")
+    else if (game.in_threefold_repetition())
+        end_game("Game over. Draw by three-fold repetition!")
+}
+
 function unHighlightSquares()
 {
-    $('#board .square-55d63').css('background', '')
+    $('#' + board_name + " .square-55d63").css("background", '')
 }
 
 function highlightSquare(square)
 {
-    var $square = $('#board .square-' + square)
+    var $square = $('#' + board_name + " .square-" + square)
 
-    var background = '#a9a9a9'
-    if ($square.hasClass('black-3c85d'))
+    var background = "#a9a9a9"
+    if ($square.hasClass("black-3c85d"))
     {
-        background = '#696969'
+        background = "#696969"
     }
 
-    $square.css('background', background)
+    $square.css("background", background)
 }
 
 function onDragStart(source, piece, position, orientation)
 {
-    if (game.turn() != piece[0])
+    if (game.turn() != piece[0] || game.game_over())
         return false
 }
 
@@ -33,6 +50,8 @@ function onDrop(source, target)
 
     if (move == null)
         return "snapback"
+
+    check_game()
 }
 
 function onMouseoverSquare(square, piece)
@@ -42,7 +61,7 @@ function onMouseoverSquare(square, piece)
         verbose: true
     })
 
-    if (moves.length === 0)
+    if (moves.length == 0)
         return
 
     highlightSquare(square)
@@ -68,6 +87,7 @@ var board_config = {
     onMouseoutSquare: onMouseoutSquare
 }
 
+var board_name = "board"
 var game = new Chess()
-var board = Chessboard("board", board_config)
+var board = Chessboard(board_name, board_config)
 
