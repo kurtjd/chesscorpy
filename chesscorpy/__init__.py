@@ -184,7 +184,7 @@ def mygames():
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
     games_ = [dict(game_) for game_ in games_]
     for game_ in games_:
-        game_["my_color"], opponent_color = helpers.player_colors(game_["player_white_id"], user.get_logged_in_id())
+        game_["my_color"], opponent_color = helpers.get_player_colors(game_["player_white_id"], user.get_logged_in_id())
 
         opponent = user.get_data_by_id(game_[f"player_{opponent_color}_id"], ["id", "username"])
 

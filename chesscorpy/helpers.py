@@ -25,7 +25,7 @@ def login_required(f):
     return decorated_function
 
 
-def player_colors(white_id, user_id):
+def get_player_colors(white_id, user_id):
     """ Returns a tuple of colors in the order (user, opponent). """
 
     return ("White", "black") if white_id == user_id else ("Black", "white")
