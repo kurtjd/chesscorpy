@@ -37,7 +37,7 @@ def create(username, password, email, rating, notifications):
     query = "INSERT INTO users (username, password, email, rating, notifications) VALUES(?, ?, ?, ?, ?)"
     query_args = [username, generate_password_hash(password), email, rating, notifications]
 
-    database.sql_exec(constants.DATABASE_FILE, query, query_args, False, False)
+    database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
 
 
 def auto_login(username):

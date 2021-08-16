@@ -10,7 +10,7 @@ def get_public_requests():
             "BETWEEN min_rating AND max_rating"
     query_args = [constants.PUBLIC_USER_ID] + [user.get_logged_in_id()] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, True, False)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
 
 def get_direct_requests():
@@ -21,7 +21,7 @@ def get_direct_requests():
             "opponent_id = ?"
     query_args = [user.get_logged_in_id()]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, True, False)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
 
 def create_request(user_id, opponent_id, turnlimit, minrating, maxrating, color, is_public):
@@ -56,7 +56,7 @@ def create_game(white_id, black_id, turnlimit, is_public):
             "VALUES(?, ?, ?, ?, ?)"
     query_args = [white_id, black_id, turnlimit, white_id, is_public]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False, False, True)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False, True)
 
 
 def get_game_data_if_authed(game_id, user_id):
@@ -75,7 +75,7 @@ def get_active_games(user_id):
             "(status = 'no_move' OR status = 'in_progress')"
     query_args = [user_id] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, True, False)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
 
 def get_active_games_to_move(user_id):
@@ -84,7 +84,7 @@ def get_active_games_to_move(user_id):
     query = "SELECT * FROM games WHERE to_move = ? AND (status = 'no_move' OR status = 'in_progress')"
     query_args = [user_id]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, True, False)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
 
 def get_game_history_if_authed(player_id, viewer_id):
@@ -94,4 +94,4 @@ def get_game_history_if_authed(player_id, viewer_id):
             "(player_white_id = ? OR player_black_id = ?) AND status != 'no_move' AND status != 'in_progress'"
     query_args = [viewer_id] * 2 + [player_id] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, True, False)
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args)

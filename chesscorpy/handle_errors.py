@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash
-from . import constants, input_validation, database, helpers, user
+from . import constants, input_validation, helpers, user
 
 
 def for_register(username, password, email, rating):
@@ -36,8 +36,7 @@ def for_register(username, password, email, rating):
         return helpers.error(error_msg, 400)
 
     # Make sure username is not already taken
-    if database.sql_exec(constants.DATABASE_FILE, "SELECT username FROM users WHERE username=?",
-                         [username], False, False):
+    if user.get_data_by_name(username, ["username"]):
         return helpers.error("Username already exists", 400)
 
 
