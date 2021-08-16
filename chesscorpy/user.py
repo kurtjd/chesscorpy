@@ -73,7 +73,7 @@ def set_rating_from_str(rating):
 
     # If rating is not a number, silently set it to default.
     try:
-        rating = round(int(rating))
+        rating = round(float(rating))
     except ValueError:
         rating = constants.DEFAULT_RATING
 
