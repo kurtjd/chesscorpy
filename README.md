@@ -6,7 +6,8 @@ Requirements
 ============
 * Python 3+
 * Flask
-* python-chess
+* chess
+* pytest (for unit testing)
 
 Installation
 ============
@@ -18,4 +19,5 @@ Run
 
 Credits
 =======
-Thanks to Chris Oakman for the chessboard.js library.
+* Chris Oakman (chessboard.js)
+* Jeff Hlywa (chess.js)
