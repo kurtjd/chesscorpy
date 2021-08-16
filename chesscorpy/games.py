@@ -1,4 +1,4 @@
-from . import constants, database, user, helpers
+from . import constants, database, user, helpers, handle_errors
 
 
 def get_public_requests():
@@ -135,3 +135,18 @@ def format_game_history(games_data):
             game_["result"] = "0 - 1"
 
     return games_data
+
+
+def get_opponent_id(username):
+    """ Returns an opponent id based on given username. """
+
+    if username != "public":
+        opponent = user.get_data_by_name(username, ["id"])
+
+        errors = handle_errors.for_newgame_opponent(opponent)
+        if errors:
+            return errors
+
+        return opponent["id"]
+    else:
+        return constants.PUBLIC_USER_ID

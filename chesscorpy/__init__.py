@@ -107,18 +107,8 @@ def newgame():
         if errors:
             return errors
 
-        if username != "public":
-            opponent = user.get_data_by_name(username, ["id"])
-
-            errors = handle_errors.for_newgame_opponent(opponent)
-            if errors:
-                return errors
-
-            opponent_id = opponent["id"]
-        else:
-            opponent_id = constants.PUBLIC_USER_ID
-
-        games.create_request(user.get_logged_in_id(), opponent_id, turnlimit, minrating, maxrating, color, is_public)
+        games.create_request(user.get_logged_in_id(), games.get_opponent_id(username), turnlimit, minrating,
+                             maxrating, color, is_public)
 
         return redirect("/opengames")
     else:
