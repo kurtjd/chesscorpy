@@ -190,21 +190,6 @@ def history():
         return helpers.error("That user does not exist.", 400)
 
     username = user_["username"]
-
     games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
-    # Go through each game and change/add some data to make it more human readable.
-    games_ = [dict(game_) for game_ in games_]
-    for game_ in games_:
-        game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])["username"]
-        game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])["username"]
-
-        # Determine the "result" based on who won or if it was a draw.
-        if game_["winner"] == 0:
-            game_["result"] = "1/2 - 1/2"
-        elif game_["winner"] == game_["player_white_id"]:
-            game_["result"] = "1 - 0"
-        else:
-            game_["result"] = "0 - 1"
-
-    return render_template("history.html", games=games_, username=username)
+    return render_template("history.html", games=games.format_game_history(games_), username=username)

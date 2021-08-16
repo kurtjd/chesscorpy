@@ -115,3 +115,23 @@ def format_active_games(games_data):
         game_["time_to_move"] = helpers.get_turn_time_left(game_["move_start_time"], game_["turn_day_limit"])
 
     return games_data
+
+
+def format_game_history(games_data):
+    """ Takes a Row object of a game history, turns it into a list,
+    and adds/modifies some things for better readability."""
+
+    games_data = [dict(game_) for game_ in games_data]
+    for game_ in games_data:
+        game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])["username"]
+        game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])["username"]
+
+        # Determine the "result" based on who won or if it was a draw.
+        if game_["winner"] == 0:
+            game_["result"] = "1/2 - 1/2"
+        elif game_["winner"] == game_["player_white_id"]:
+            game_["result"] = "1 - 0"
+        else:
+            game_["result"] = "0 - 1"
+
+    return games_data
