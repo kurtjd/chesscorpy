@@ -10,7 +10,7 @@ flask_session.Session(app)
 
 @app.route("/")
 def index():
-    """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
+    """ Displays the homepage if user is not logged in, otherwise display user page. """
 
     if user.logged_in():
         return render_template("/index_loggedin.html", user_data=user.get_data_by_id(user.get_logged_in_id()))
