@@ -1,3 +1,4 @@
+import random
 import datetime
 from functools import wraps
 from flask import redirect, render_template
@@ -28,6 +29,23 @@ def player_colors(white_id, user_id):
     """ Returns a tuple of colors in the order (user, opponent). """
 
     return ("White", "black") if white_id == user_id else ("Black", "white")
+
+
+def determine_player_colors(requester_color, requester_id, challenger_id):
+    """ Determines which user is which color and returns a tuple in the form (player white, player black). """
+
+    if requester_color == "white":
+        return requester_id, challenger_id
+    elif requester_color == "black":
+        return challenger_id, requester_id
+    else:
+        # Assign colors randomly.
+        random.seed(datetime.datetime.now().timestamp())
+
+        if random.randint(0, 1) == 1:
+            return requester_id, challenger_id
+        else:
+            return challenger_id, requester_id
 
 
 def get_turn_time_left(turn_start, turnlimit):

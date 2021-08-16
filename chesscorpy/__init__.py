@@ -1,5 +1,3 @@
-import random
-import datetime
 import flask_session
 from flask import Flask, render_template, redirect, request
 from . import constants, helpers, database, input_validation, handle_errors, user, games
@@ -147,23 +145,8 @@ def start():
     if not game_request:
         return redirect("/")
 
-    # Determine which player is which color.
-    if game_request["color"] == "white":
-        white_id = game_request["user_id"]
-        black_id = user.get_logged_in_id()
-    elif game_request["color"] == "black":
-        white_id = user.get_logged_in_id()
-        black_id = game_request["user_id"]
-    else:
-        # Assign colors randomly.
-        random.seed(datetime.datetime.now().timestamp())
-
-        if random.randint(0, 1) == 1:
-            white_id = game_request["user_id"]
-            black_id = user.get_logged_in_id()
-        else:
-            white_id = user.get_logged_in_id()
-            black_id = game_request["user_id"]
+    white_id, black_id = helpers.determine_player_colors(game_request["color"], game_request["user_id"],
+                                                         user.get_logged_in_id())
 
     game_id = games.create_game(white_id, black_id, game_request["turn_day_limit"], game_request["public"])
     games.delete_request(request_id)
