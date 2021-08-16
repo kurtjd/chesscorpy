@@ -47,7 +47,8 @@ def auto_login(username):
     query_args = [username]
 
     user_id = database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
-    session[constants.USER_SESSION] = user_id["id"]
+    # session[constants.USER_SESSION] = user_id["id"]
+    create_session(user_id["id"])
 
 
 def get_logged_in_id():
