@@ -30,12 +30,7 @@ def register():
         password = request.form.get("password")
         email = request.form.get("email")
         notifications = 0 if not request.form.get("notifications") else 1
-
-        # If rating is not a number, silently set it to default.
-        try:
-            rating = round(int(request.form.get("rating")))
-        except ValueError:
-            rating = constants.DEFAULT_RATING
+        rating = user.set_rating_from_str(request.form.get("rating"))
 
         errors = handle_errors.for_register(username, password, email, rating)
         if errors:

@@ -66,3 +66,15 @@ def delete_session():
     """ Deletes the current user session. """
 
     session.clear()
+
+
+def set_rating_from_str(rating):
+    """ Sets the user's starting rating when given a rating as a string. """
+
+    # If rating is not a number, silently set it to default.
+    try:
+        rating = round(int(rating))
+    except ValueError:
+        rating = constants.DEFAULT_RATING
+
+    return rating
