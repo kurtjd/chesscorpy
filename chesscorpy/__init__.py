@@ -2,7 +2,7 @@ import random
 import datetime
 import flask_session
 from flask import Flask, render_template, redirect, request
-from . import constants, helpers, database, input_validation, handle_errors, user
+from . import constants, helpers, database, input_validation, handle_errors, user, games
 
 # Initialize Flask
 app = Flask(__name__)
@@ -105,25 +105,9 @@ def logout():
 def opengames():
     """ Displays a list of public or private game requests and allows users to sort and accept these requests. """
 
-    # Selects all games that the current user has not created themselves, which are challenging the public,
-    # which have rating requirements meeting the current user's rating, OR are direct requests.
-    if not request.args.get("direct"):
-        rows = database.sql_exec(constants.DATABASE_FILE,
-                                 "SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
-                                 "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON "
-                                 "game_requests.user_id=users.id WHERE opponent_id=? AND user_id!=? AND "
-                                 "(SELECT rating FROM users WHERE id=? LIMIT 1) BETWEEN min_rating AND max_rating",
-                                 [constants.PUBLIC_USER_ID] + [user.get_logged_in_id()] * 2,
-                                 True, False)
-    else:
-        rows = database.sql_exec(constants.DATABASE_FILE,
-                                 "SELECT game_requests.id,game_requests.turn_day_limit,game_requests.color,"
-                                 "game_requests.timestamp,users.username,users.rating FROM game_requests JOIN users ON"
-                                 " game_requests.user_id=users.id WHERE opponent_id=?",
-                                 [user.get_logged_in_id()],
-                                 True, False)
+    games_ = games.get_direct_requests() if request.args.get("direct") else games.get_public_requests()
 
-    return render_template("opengames.html", games=rows)
+    return render_template("opengames.html", games=games_)
 
 
 @app.route("/newgame", methods=["GET", "POST"])
@@ -137,32 +121,26 @@ def newgame():
         turnlimit = None if not request.form.get("turnlimit").isdigit() else int(request.form.get("turnlimit"))
         minrating = None if not request.form.get("minrating").isdigit() else int(request.form.get("minrating"))
         maxrating = None if not request.form.get("maxrating").isdigit() else int(request.form.get("maxrating"))
-        public = 0 if not request.form.get("public") else 1
+        is_public = 0 if not request.form.get("public") else 1
 
-        errors = handle_errors.for_newgame(username, color, turnlimit, minrating, maxrating)
+        errors = handle_errors.for_newgame_input(username, color, turnlimit, minrating, maxrating)
         if errors:
             return errors
 
         # Check that the user someone wants to challenge actually exists if this is not a challenge to the public.
         if username != "public":
-            opponent_id = user.get_data_by_name(username, ["id"])
+            opponent = user.get_data_by_name(username, ["id"])
 
-            if not opponent_id:
-                return helpers.error("Please enter a valid user to challenge.", 400)
+            errors = handle_errors.for_newgame_opponent(opponent)
+            if errors:
+                return errors
 
-            opponent_id = opponent_id["id"]
-
-            # Don't let dingdongs challenge themselves.
-            if opponent_id == user.get_logged_in_id():
-                return helpers.error("You cannot challenge yourself.", 400)
+            opponent_id = opponent["id"]
         else:
             opponent_id = constants.PUBLIC_USER_ID
 
         # Now enter the challenge into the database.
-        database.sql_exec(constants.DATABASE_FILE,
-                          "INSERT INTO game_requests (user_id,opponent_id,turn_day_limit,"
-                          "min_rating,max_rating,color,public) VALUES(?,?,?,?,?,?,?)",
-                          [user.get_logged_in_id(), opponent_id, turnlimit, minrating, maxrating, color, public])
+        games.create_request(user.get_logged_in_id(), opponent_id, turnlimit, minrating, maxrating, color, is_public)
 
         return redirect("/opengames")
     else:

@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash
-from . import constants, input_validation, database, helpers
+from . import constants, input_validation, database, helpers, user
 
 
 def for_register(username, password, email, rating):
@@ -62,19 +62,19 @@ def for_login_input(username, password):
         return helpers.error(error_msg, 400)
 
 
-def for_login_sql(user, password):
+def for_login_sql(user_, password):
     """ Handles errors for the SQL of the login route. """
 
     # Make sure username exists.
-    if not user:
+    if not user_:
         return helpers.error("User does not exist.", 400)
 
     # Make sure username and password combination is valid.
-    if not check_password_hash(user["password"], password):
+    if not check_password_hash(user_["password"], password):
         return helpers.error("Username and password combination is invalid.", 400)
 
 
-def for_newgame(username, color, turnlimit, minrating, maxrating):
+def for_newgame_input(username, color, turnlimit, minrating, maxrating):
     """ Handles errors for the newgame route. """
 
     error_msgs = {
@@ -85,13 +85,13 @@ def for_newgame(username, color, turnlimit, minrating, maxrating):
         input_validation.TurnLimit.OUT_OF_BOUNDS: "Please enter a turn limit greater than 0.",
         input_validation.GameRatings.MIN_NONE: "Please enter the minimum rating you wish for "
                                                "people to see your challenge.",
-        input_validation.GameRatings.MIN_OUT_OF_BOUNDS: f"Please enter a minimum rating between "
+        input_validation.GameRatings.MIN_OUT_OF_BOUNDS: "Please enter a minimum rating between "
                                                         f"{constants.MIN_RATING} and {constants.MAX_RATING}.",
         input_validation.GameRatings.MIN_TOO_HIGH: "Please enter a minimum rating that is "
                                                    "less than or equal to the maximum rating.",
         input_validation.GameRatings.MAX_NONE: "Please enter the maximum rating you wish for "
                                                "people to see your challenge.",
-        input_validation.GameRatings.MAX_OUT_OF_BOUNDS: f"Please enter a maximum rating between "
+        input_validation.GameRatings.MAX_OUT_OF_BOUNDS: "Please enter a maximum rating between "
                                                         f"{constants.MIN_RATING} and {constants.MAX_RATING}.",
     }
 
@@ -112,3 +112,10 @@ def for_newgame(username, color, turnlimit, minrating, maxrating):
 
     if error_msg is not None:
         return helpers.error(error_msg, 400)
+
+
+def for_newgame_opponent(opponent):
+    if not opponent:
+        return helpers.error("Please enter a valid user to challenge.", 400)
+    elif opponent["id"] == user.get_logged_in_id():
+        return helpers.error("You cannot challenge yourself.", 400)
