@@ -1,3 +1,4 @@
+import datetime
 from functools import wraps
 from flask import redirect, render_template
 from . import user
@@ -27,3 +28,13 @@ def player_colors(white_id, user_id):
     """ Returns a tuple of colors in the order (user, opponent). """
 
     return ("White", "black") if white_id == user_id else ("Black", "white")
+
+
+def get_turn_time_left(turn_start, turnlimit):
+    """ Determines how much time left a player has to move. """
+
+    # Works by getting the time the move started, adds the turn limit to that time,
+    # and then subtracts the current time from the total.
+    return (datetime.datetime.strptime(turn_start, "%Y-%m-%d %H:%M:%S") +
+            (datetime.timedelta(days=turnlimit)) -
+            datetime.datetime.now().replace(microsecond=0))

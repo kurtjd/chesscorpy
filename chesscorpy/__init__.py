@@ -234,13 +234,7 @@ def mygames():
         game_["opponent_name"] = opponent["username"]
         game_["opponent_id"] = opponent["id"]
         game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])[0]
-
-        # Determines how much time left for the player who's turn it is to move.
-        # Works by getting the time the move started, adds the turn limit to that time,
-        # and then subtracts the current time from the total.
-        game_["time_to_move"] = (datetime.datetime.strptime(game_["move_start_time"], "%Y-%m-%d %H:%M:%S") +
-                                 (datetime.timedelta(days=game_["turn_day_limit"])) -
-                                 datetime.datetime.now().replace(microsecond=0))
+        game_["time_to_move"] = helpers.get_turn_time_left(game_["move_start_time"], game_["turn_day_limit"])
 
     return render_template("mygames.html", games=games_)
 
