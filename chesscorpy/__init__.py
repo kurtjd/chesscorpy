@@ -175,20 +175,7 @@ def mygames():
     else:
         games_ = games.get_active_games(user.get_logged_in_id())
 
-    # Add extra keys into games list for opponent info and user's color.
-    # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
-    games_ = [dict(game_) for game_ in games_]
-    for game_ in games_:
-        game_["my_color"], opponent_color = helpers.get_player_colors(game_["player_white_id"], user.get_logged_in_id())
-
-        opponent = user.get_data_by_id(game_[f"player_{opponent_color}_id"], ["id", "username"])
-
-        game_["opponent_name"] = opponent["username"]
-        game_["opponent_id"] = opponent["id"]
-        game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])["username"]
-        game_["time_to_move"] = helpers.get_turn_time_left(game_["move_start_time"], game_["turn_day_limit"])
-
-    return render_template("mygames.html", games=games_)
+    return render_template("mygames.html", games=games.format_active_games(games_))
 
 
 @app.route("/history")

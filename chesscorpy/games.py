@@ -1,4 +1,4 @@
-from . import constants, database, user
+from . import constants, database, user, helpers
 
 
 def get_public_requests():
@@ -95,3 +95,23 @@ def get_game_history_if_authed(player_id, viewer_id):
     query_args = [viewer_id] * 2 + [player_id] * 2
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+
+
+def format_active_games(games_data):
+    """ Takes a Row object of active games, turns it into a list,
+    and adds/modifies some things for better readability. """
+
+    # Add extra keys into games list for opponent info and user's color.
+    # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
+    games_data = [dict(game_) for game_ in games_data]
+    for game_ in games_data:
+        game_["my_color"], opponent_color = helpers.get_player_colors(game_["player_white_id"], user.get_logged_in_id())
+
+        opponent = user.get_data_by_id(game_[f"player_{opponent_color}_id"], ["id", "username"])
+
+        game_["opponent_name"] = opponent["username"]
+        game_["opponent_id"] = opponent["id"]
+        game_["player_to_move"] = user.get_data_by_id(game_["to_move"], ["username"])["username"]
+        game_["time_to_move"] = helpers.get_turn_time_left(game_["move_start_time"], game_["turn_day_limit"])
+
+    return games_data
