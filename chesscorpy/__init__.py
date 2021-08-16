@@ -4,15 +4,13 @@ import flask_session
 from flask import Flask, render_template, redirect, request
 from . import constants, helpers, database, input_validation, handle_errors, user, games
 
-# Initialize Flask
+
 app = Flask(__name__)
 
-# Configure sessions
 app.config["SESSION_TYPE"] = "filesystem"
 flask_session.Session(app)
 
 
-# Define routes
 @app.route("/")
 def index():
     """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
