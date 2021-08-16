@@ -159,10 +159,7 @@ def start():
         return redirect("/")
 
     # Make sure game request exists and that user is authorized to accept the request.
-    game_request = database.sql_exec(constants.DATABASE_FILE,
-                                     "SELECT * FROM game_requests WHERE id=? AND (opponent_id=0 OR opponent_id=?)",
-                                     [request_id, user.get_logged_in_id()],
-                                     False)
+    game_request = games.get_request_data_if_authed(request_id, user.get_logged_in_id())
 
     if not game_request:
         return redirect("/")
@@ -186,15 +183,10 @@ def start():
             black_id = game_request["user_id"]
 
     # Create game based off data in the game request.
-    game_id = database.sql_exec(constants.DATABASE_FILE,
-                                "INSERT INTO games (player_white_id,player_black_id,turn_day_limit,to_move,public) "
-                                "VALUES(?,?,?,?,?)",
-                                [white_id, black_id, game_request["turn_day_limit"],
-                                 white_id, game_request["public"]],
-                                False, False, True)
+    game_id = games.create_game(white_id, black_id, game_request["turn_day_limit"], game_request["public"])
 
     # Delete game request from database.
-    database.sql_exec(constants.DATABASE_FILE, "DELETE FROM game_requests WHERE id=?", [request_id])
+    games.delete_request(request_id)
 
     # Jump to the newly created game.
     return redirect(f"/game?id={game_id}")
@@ -208,11 +200,7 @@ def game():
     game_id = request.args.get("id")
 
     # Select game if it exists and the user is either a player in the game or the game is public.
-    game_data = database.sql_exec(constants.DATABASE_FILE,
-                                  "SELECT * FROM games WHERE id=? AND (player_white_id=? OR "
-                                  "player_black_id=? OR public=1)",
-                                  [game_id] + [user.get_logged_in_id()] * 2,
-                                  False)
+    game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id())
 
     # Error handling
     if not game_data:
@@ -230,17 +218,9 @@ def mygames():
 
     # Either display all active games or only games where it's the user's turn to move.
     if my_move:
-        games_ = database.sql_exec(constants.DATABASE_FILE,
-                                   "SELECT * FROM games WHERE to_move=? AND "
-                                   "(status='no_move' OR status='in_progress')",
-                                   [user.get_logged_in_id()],
-                                   True, False)
+        games_ = games.get_active_games_to_move(user.get_logged_in_id())
     else:
-        games_ = database.sql_exec(constants.DATABASE_FILE,
-                                   "SELECT * FROM games WHERE player_white_id=? OR player_black_id=? AND "
-                                   "(status='no_move' OR status='in_progress')",
-                                   [user.get_logged_in_id()] * 2,
-                                   True, False)
+        games_ = games.get_active_games(user.get_logged_in_id())
 
     # Add extra keys into games list for opponent info and user's color.
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
@@ -281,12 +261,7 @@ def history():
 
     # Select completed games from the given user which are either
     # publically viewable or were played by the logged-in user.
-    games_ = database.sql_exec(constants.DATABASE_FILE,
-                               "SELECT * FROM games WHERE (public=1 OR player_white_id=? OR player_black_id=?) AND "
-                               "(player_white_id=? OR player_black_id=?) AND status!='no_move' AND "
-                               "status!='in_progress'",
-                               [user.get_logged_in_id()] * 2 + [user_id] * 2,
-                               True, False)
+    games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
     # Go through each game and change/add some data to make it more human readable.
     games_ = [dict(game_) for game_ in games_]
