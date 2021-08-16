@@ -17,7 +17,6 @@ flask_session.Session(app)
 def index():
     """ Displays the homepage if user is not logged in, otherwise redirects them to the lobby. """
 
-    # If user is already logged in, render different page.
     if user.logged_in():
         return render_template("/index_loggedin.html", user_data=user.get_data_by_id(user.get_logged_in_id()))
     else:
@@ -28,7 +27,6 @@ def index():
 def register():
     """ Allows a new user to register. """
 
-    # If user is logged in, just go back to home page.
     if user.logged_in():
         return redirect("/")
 
@@ -48,10 +46,7 @@ def register():
         if errors:
             return errors
 
-        # Finally create new user in database
         user.create(username, password, email, rating, notifications)
-
-        # Auto login user
         user.auto_login(username)
 
         return redirect("/")
@@ -63,7 +58,6 @@ def register():
 def login():
     """ Allows a user to login. """
 
-    # If user is logged in, just go back to home page.
     if user.logged_in():
         return redirect("/")
 
@@ -75,14 +69,12 @@ def login():
         if errors:
             return errors
 
-        # Retrieve user data by username.
         user_ = user.get_data_by_name(username, ["id", "username", "password"])
 
         errors = handle_errors.for_login_sql(user_, password)
         if errors:
             return errors
 
-        # If valid, create session with user's id
         user.create_session(user_["id"])
 
         return redirect("/")
@@ -95,7 +87,6 @@ def login():
 def logout():
     """ Logs a user out. """
 
-    # Delete user's session and return to homepage.
     user.delete_session()
     return redirect("/")
 
@@ -106,7 +97,6 @@ def opengames():
     """ Displays a list of public or private game requests and allows users to sort and accept these requests. """
 
     games_ = games.get_direct_requests() if request.args.get("direct") else games.get_public_requests()
-
     return render_template("opengames.html", games=games_)
 
 
@@ -127,7 +117,6 @@ def newgame():
         if errors:
             return errors
 
-        # Check that the user someone wants to challenge actually exists if this is not a challenge to the public.
         if username != "public":
             opponent = user.get_data_by_name(username, ["id"])
 
@@ -139,7 +128,6 @@ def newgame():
         else:
             opponent_id = constants.PUBLIC_USER_ID
 
-        # Now enter the challenge into the database.
         games.create_request(user.get_logged_in_id(), opponent_id, turnlimit, minrating, maxrating, color, is_public)
 
         return redirect("/opengames")
@@ -154,11 +142,9 @@ def start():
 
     request_id = request.args.get("id")
 
-    # Don't allow blank or invalid request IDs.
     if not request_id or not request_id.isdigit():
         return redirect("/")
 
-    # Make sure game request exists and that user is authorized to accept the request.
     game_request = games.get_request_data_if_authed(request_id, user.get_logged_in_id())
 
     if not game_request:
@@ -182,13 +168,9 @@ def start():
             white_id = user.get_logged_in_id()
             black_id = game_request["user_id"]
 
-    # Create game based off data in the game request.
     game_id = games.create_game(white_id, black_id, game_request["turn_day_limit"], game_request["public"])
-
-    # Delete game request from database.
     games.delete_request(request_id)
 
-    # Jump to the newly created game.
     return redirect(f"/game?id={game_id}")
 
 
@@ -198,11 +180,8 @@ def game():
     """ Generates a game board based on the status of the game and allows user to make moves. """
 
     game_id = request.args.get("id")
-
-    # Select game if it exists and the user is either a player in the game or the game is public.
     game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id())
 
-    # Error handling
     if not game_data:
         return redirect("/")
 
@@ -216,7 +195,6 @@ def mygames():
 
     my_move = request.args.get("my_move")
 
-    # Either display all active games or only games where it's the user's turn to move.
     if my_move:
         games_ = games.get_active_games_to_move(user.get_logged_in_id())
     else:
@@ -226,7 +204,6 @@ def mygames():
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
     games_ = [dict(game_) for game_ in games_]
     for game_ in games_:
-        # Determine's user's and opponent's colors in game.
         game_["my_color"], opponent_color = helpers.player_colors(game_["player_white_id"], user.get_logged_in_id())
 
         opponent = user.get_data_by_id(game_[f"player_{opponent_color}_id"], ["id", "username"])
@@ -245,16 +222,13 @@ def history():
     """ Displays the game history of a user. """
 
     user_id = request.args.get("id")
-
-    # Check that the user exists and get its username.
     user_ = user.get_data_by_id(user_id, ["username"])
+
     if not user_:
         return helpers.error("That user does not exist.", 400)
 
     username = user_[0]
 
-    # Select completed games from the given user which are either
-    # publically viewable or were played by the logged-in user.
     games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
     # Go through each game and change/add some data to make it more human readable.

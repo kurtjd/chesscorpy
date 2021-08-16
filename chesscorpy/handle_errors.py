@@ -35,7 +35,6 @@ def for_register(username, password, email, rating):
     if error_msg is not None:
         return helpers.error(error_msg, 400)
 
-    # Make sure username is not already taken
     if user.get_data_by_name(username, ["username"]):
         return helpers.error("Username already exists", 400)
 
@@ -64,7 +63,6 @@ def for_login_input(username, password):
 def for_login_sql(user_, password):
     """ Handles errors for the SQL of the login route. """
 
-    # Make sure username exists.
     if not user_:
         return helpers.error("User does not exist.", 400)
 
