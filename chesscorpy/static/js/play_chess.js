@@ -2,7 +2,7 @@ function send_move_to_server(move_uci)
 {
     $.post("/move",
         {
-            id: game_id,
+            id: GAME_ID,
             move: move_uci
         },
         function(data, status)
