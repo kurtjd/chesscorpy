@@ -14,7 +14,10 @@
 {% endblock %}
 
 {% block main %}
-  <div id="board" style="width: 400px"></div>
+  <div id="player1"><b>Zero_Cool</b></div><br>
+  <div id="board" style="width: 400px"></div><br>
+  <div id="player2"><b>Acid_Burn</b></div>
+
   <script>
     var GAME_ID = {{ game_data.id }}
     var FEN = "{{ game_data.fen }}"

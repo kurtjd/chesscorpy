@@ -82,7 +82,7 @@ def get_game_data_if_to_move(game_id, user_id):
 def get_active_games(user_id):
     """ Retrieves a list of active games for a user. """
 
-    query = "SELECT * FROM games WHERE player_white_id = ? OR player_black_id = ? AND " \
+    query = "SELECT * FROM games WHERE (player_white_id = ? OR player_black_id = ?) AND " \
             f"(status = '{game_statuses.NO_MOVE}' OR status = '{game_statuses.IN_PROGRESS}')"
     query_args = [user_id] * 2
 
