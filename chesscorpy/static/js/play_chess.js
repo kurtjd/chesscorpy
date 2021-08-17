@@ -7,7 +7,8 @@ function send_move_to_server(move_uci)
         },
         function(data, status)
         {
-            alert("Status: " + status + "\nData: " + data)
+            if (!data.successful)
+                alert("Unable to perform move.")
         }
     )
 }
@@ -49,7 +50,7 @@ function highlightSquare(square)
 
 function onDragStart(source, piece, position, orientation)
 {
-    if (game.turn() != piece[0] || game.game_over())
+    if (game.turn() != piece[0] || game.turn() != USER_COLOR[0] || game.game_over())
         return false
 }
 
@@ -78,7 +79,7 @@ function onMouseoverSquare(square, piece)
         verbose: true
     })
 
-    if (moves.length == 0)
+    if (moves.length == 0 || game.turn() != USER_COLOR[0])
         return
 
     highlightSquare(square)
@@ -107,4 +108,13 @@ var board_config = {
 var board_name = "board"
 var game = new Chess()
 var board = Chessboard(board_name, board_config)
+
+if (FEN != "None")
+    board.position(FEN, false)
+    game.load(FEN)
+
+if (USER_COLOR == "white" || USER_COLOR == "none")
+    board.orientation("white")
+else
+    board.orientation("black")
 

@@ -1,6 +1,6 @@
 import flask_session
 from flask import Flask, render_template, redirect, request, jsonify
-from . import constants, helpers, database, input_validation, handle_errors, user, games, handle_move
+from . import constants, helpers, database, input_validation, handle_errors, user, games, handle_move, game_statuses
 
 
 app = Flask(__name__)
@@ -153,7 +153,8 @@ def game():
     # Figure out the color of the user viewing this game. If not a player but just a spectator, set color to None.
     game_data = database.row_to_dict(game_data)
     if games.get_game_data_if_authed(game_id, user.get_logged_in_id(), False):
-        game_data["my_color"] = helpers.get_player_colors(game_data["player_white_id"], user.get_logged_in_id())[0]
+        game_data["my_color"] = helpers.get_player_colors(game_data["player_white_id"],
+                                                          user.get_logged_in_id())[0].lower()
     else:
         game_data["my_color"] = "None"
 
@@ -206,7 +207,9 @@ def move_request():
 
         game_data = games.get_game_data_if_to_move(game_id, user.get_logged_in_id())
 
-        if not game_data:
+        # Don't let player move in an already completed game.
+        if not game_data or (game_data["status"] != game_statuses.NO_MOVE and
+                             game_data["status"] != game_statuses.IN_PROGRESS):
             return jsonify(successful=False)
 
         return jsonify(successful=handle_move.process_move(move, database.row_to_dict(game_data)))

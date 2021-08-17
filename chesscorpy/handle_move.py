@@ -42,7 +42,13 @@ def update_game_status(game_status, game_data):
 
         game_data["status"] = status_options[game_status.termination]
 
-        win_color = game_status.winner if game_status.winner else constants.DRAW_USER_ID
+        if game_status.winner == chess.WHITE:
+            win_color = "white"
+        elif game_status.winner == chess.BLACK:
+            win_color = "black"
+        else:
+            win_color = constants.DRAW_USER_ID
+
         game_data["winner"] = user.get_data_by_id(game_data[f"player_{win_color}_id"], ["id"])["id"]
     else:
         game_data["status"] = game_statuses.IN_PROGRESS
@@ -72,6 +78,9 @@ def process_move(move, game_data):
     """ Processes a move request from a user. """
 
     game = chess.Board()
+    if game_data["fen"]:
+        game.set_fen(game_data["fen"])
+
     move = chess.Move.from_uci(move)
 
     if not attempt_move(move, game):

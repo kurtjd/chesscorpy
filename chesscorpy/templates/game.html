@@ -17,8 +17,8 @@
   <div id="board" style="width: 400px"></div>
   <script>
     var GAME_ID = {{ game_data.id }}
-    var FEN = {{ game_data.fen }}
-    var USER_COLOR = {{ game_data.my_color }}
+    var FEN = "{{ game_data.fen }}"
+    var USER_COLOR = "{{ game_data.my_color }}"
   </script>
   <script src="/static/js/play_chess.js"></script>
 {% endblock %}
