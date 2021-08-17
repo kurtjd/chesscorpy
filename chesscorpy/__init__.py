@@ -150,13 +150,16 @@ def game():
     if not game_data:
         return redirect("/")
 
-    # Figure out the color of the user viewing this game. If not a player but just a spectator, set color to None.
     game_data = database.row_to_dict(game_data)
-    if games.get_game_data_if_authed(game_id, user.get_logged_in_id(), False):
-        game_data["my_color"] = helpers.get_player_colors(game_data["player_white_id"],
-                                                          user.get_logged_in_id())[0].lower()
+    game_data["player_white_name"] = user.get_data_by_id(game_data["player_white_id"], ["username"])["username"]
+    game_data["player_black_name"] = user.get_data_by_id(game_data["player_black_id"], ["username"])["username"]
+
+    if game_data["player_white_id"] == user.get_logged_in_id():
+        game_data["my_color"] = "white"
+    elif game_data["player_black_id"] == user.get_logged_in_id():
+        game_data["my_color"] = "black"
     else:
-        game_data["my_color"] = "None"
+        game_data["my_color"] = "none"
 
     return render_template("game.html", game_data=game_data)
 

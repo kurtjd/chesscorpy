@@ -118,3 +118,13 @@ if (USER_COLOR == "white" || USER_COLOR == "none")
 else
     board.orientation("black")
 
+if (board.orientation() == "white")
+{
+    $("#player1").html("<b>" + PLAYER_BLACK + "</b>")
+    $("#player2").html("<b>" + PLAYER_WHITE + "</b>")
+}
+else
+{
+    $("#player1").html("<b>" + PLAYER_WHITE + "</b>")
+    $("#player2").html("<b>" + PLAYER_BLACK + "</b>")
+}

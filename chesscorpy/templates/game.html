@@ -14,13 +14,15 @@
 {% endblock %}
 
 {% block main %}
-  <div id="player1"><b>Zero_Cool</b></div><br>
+  <div id="player1"></div><br>
   <div id="board" style="width: 400px"></div><br>
-  <div id="player2"><b>Acid_Burn</b></div>
+  <div id="player2"></div>
 
   <script>
     var GAME_ID = {{ game_data.id }}
     var FEN = "{{ game_data.fen }}"
+    var PLAYER_WHITE = "{{ game_data.player_white_name }}"
+    var PLAYER_BLACK = "{{ game_data.player_black_name }}"
     var USER_COLOR = "{{ game_data.my_color }}"
   </script>
   <script src="/static/js/play_chess.js"></script>
