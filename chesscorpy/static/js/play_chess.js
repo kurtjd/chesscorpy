@@ -43,6 +43,7 @@ function onDrop(source, target)
 {
     unHighlightSquares()
 
+    // TODO: Check promotion
     var move = game.move({
         from: source,
         to: target

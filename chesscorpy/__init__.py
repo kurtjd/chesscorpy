@@ -1,6 +1,6 @@
 import flask_session
-from flask import Flask, render_template, redirect, request
-from . import constants, helpers, database, input_validation, handle_errors, user, games
+from flask import Flask, render_template, redirect, request, jsonify
+from . import constants, helpers, database, input_validation, handle_errors, user, games, handle_move
 
 
 app = Flask(__name__)
@@ -183,3 +183,22 @@ def history():
     games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
     return render_template("history.html", games=games.format_game_history(games_), username=username)
+
+
+@app.route("/move")
+@helpers.login_required
+def move_request():
+    """ Processes a move request for a game by a user. """
+
+    game_id = request.form.get("id")
+    move = request.form.get("move")
+
+    if not game_id or not move:
+        return redirect('/')
+
+    game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id(), False)
+
+    if not game_data:
+        return redirect('/')
+
+    return jsonify(handle_move.process_move(move, database.row_to_dict(game_data)))

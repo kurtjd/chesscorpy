@@ -1,4 +1,4 @@
-from . import constants, database, user, helpers, handle_errors
+from . import constants, database, user, helpers, handle_errors, game_statuses
 
 
 def get_public_requests():
@@ -59,10 +59,12 @@ def create_game(white_id, black_id, turnlimit, is_public):
     return database.sql_exec(constants.DATABASE_FILE, query, query_args, False, True)
 
 
-def get_game_data_if_authed(game_id, user_id):
+def get_game_data_if_authed(game_id, user_id, auth_public=True):
     """ Retrieves game data if the user is authorized to see it. """
 
-    query = "SELECT * FROM games WHERE id = ? AND (player_white_id = ? OR player_black_id = ? OR public = 1)"
+    public = " OR public = 1" if auth_public else ''
+
+    query = f"SELECT * FROM games WHERE id = ? AND (player_white_id = ? OR player_black_id = ?{public}) LIMIT 1"
     query_args = [game_id] + [user_id] * 2
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
@@ -72,7 +74,7 @@ def get_active_games(user_id):
     """ Retrieves a list of active games for a user. """
 
     query = "SELECT * FROM games WHERE player_white_id = ? OR player_black_id = ? AND " \
-            "(status = 'no_move' OR status = 'in_progress')"
+            f"(status = '{game_statuses.NO_MOVE}' OR status = '{game_statuses.IN_PROGRESS}')"
     query_args = [user_id] * 2
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args)
@@ -81,7 +83,8 @@ def get_active_games(user_id):
 def get_active_games_to_move(user_id):
     """ Retrieves a list of active games for a user where it's also the user's turn to move. """
 
-    query = "SELECT * FROM games WHERE to_move = ? AND (status = 'no_move' OR status = 'in_progress')"
+    query = f"SELECT * FROM games WHERE to_move = ? AND (status = '{game_statuses.NO_MOVE}' " \
+            f"OR status = '{game_statuses.IN_PROGRESS}')"
     query_args = [user_id]
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args)
@@ -91,19 +94,19 @@ def get_game_history_if_authed(player_id, viewer_id):
     """ Retrieves a list of completed games of a user if the viewer is authorized to see it. """
 
     query = "SELECT * FROM games WHERE (public = 1 OR player_white_id = ? OR player_black_id = ?) AND " \
-            "(player_white_id = ? OR player_black_id = ?) AND status != 'no_move' AND status != 'in_progress'"
+            f"(player_white_id = ? OR player_black_id = ?) AND status != '{game_statuses.NO_MOVE}' " \
+            f"AND status != '{game_statuses.IN_PROGRESS}'"
     query_args = [viewer_id] * 2 + [player_id] * 2
 
     return database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
 
 def format_active_games(games_data):
-    """ Takes a Row object of active games, turns it into a list,
-    and adds/modifies some things for better readability. """
+    """ Adds/modifies some things for better readability. """
 
     # Add extra keys into games list for opponent info and user's color.
     # Might be able to simplify this with a fancier SQL statement, but it works fine for now.
-    games_data = [dict(game_) for game_ in games_data]
+    games_data = database.rows_to_list(games_data)
     for game_ in games_data:
         game_["my_color"], opponent_color = helpers.get_player_colors(game_["player_white_id"], user.get_logged_in_id())
 
@@ -118,10 +121,9 @@ def format_active_games(games_data):
 
 
 def format_game_history(games_data):
-    """ Takes a Row object of a game history, turns it into a list,
-    and adds/modifies some things for better readability."""
+    """ Adds/modifies some things for better readability."""
 
-    games_data = [dict(game_) for game_ in games_data]
+    games_data = database.rows_to_list(games_data)
     for game_ in games_data:
         game_["player_white_name"] = user.get_data_by_id(game_["player_white_id"], ["username"])["username"]
         game_["player_black_name"] = user.get_data_by_id(game_["player_black_id"], ["username"])["username"]

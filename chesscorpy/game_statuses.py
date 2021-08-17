@@ -1,0 +1,5 @@
+NO_MOVE = "no_move"
+IN_PROGRESS = "in_progress"
+CHECKMATE = "checkmate"
+STALEMATE = "stalemate"
+DRAW = "draw"
