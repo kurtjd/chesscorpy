@@ -1,3 +1,17 @@
+function send_move_to_server(move_uci)
+{
+    $.post("/move",
+        {
+            id: game_id,
+            move: move_uci
+        },
+        function(data, status)
+        {
+            alert("Status: " + status + "\nData: " + data)
+        }
+    )
+}
+
 function end_game(msg)
 {
     alert(msg)
@@ -51,6 +65,8 @@ function onDrop(source, target)
 
     if (move == null)
         return "snapback"
+
+    send_move_to_server(source + target)
 
     check_game()
 }

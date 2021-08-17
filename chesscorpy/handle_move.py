@@ -60,6 +60,7 @@ def update_game_data(game_data, game_fen, game_status):
 def attempt_move(move, game):
     """ Attempts to make a move if valid. """
 
+    # TODO: Check promotion
     if move in game.legal_moves:
         game.push(move)
         return True
@@ -80,4 +81,4 @@ def process_move(move, game_data):
 
     update_game_db(game_data)
 
-    return game_data
+    return True

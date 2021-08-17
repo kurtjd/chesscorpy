@@ -70,6 +70,15 @@ def get_game_data_if_authed(game_id, user_id, auth_public=True):
     return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
 
 
+def get_game_data_if_to_move(game_id, user_id):
+    """ Retrieves game data if the user is next to move. """
+
+    query = f"SELECT * FROM games WHERE id = ? AND to_move = ? LIMIT 1"
+    query_args = [game_id, user_id]
+
+    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+
+
 def get_active_games(user_id):
     """ Retrieves a list of active games for a user. """
 

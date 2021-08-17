@@ -15,5 +15,8 @@
 
 {% block main %}
   <div id="board" style="width: 400px"></div>
+  <script>
+    var game_id = {{ game_data.id }}
+  </script>
   <script src="/static/js/play_chess.js"></script>
 {% endblock %}

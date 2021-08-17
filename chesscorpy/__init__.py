@@ -185,20 +185,23 @@ def history():
     return render_template("history.html", games=games.format_game_history(games_), username=username)
 
 
-@app.route("/move")
+@app.route("/move", methods=["GET", "POST"])
 @helpers.login_required
 def move_request():
     """ Processes a move request for a game by a user. """
 
-    game_id = request.form.get("id")
-    move = request.form.get("move")
+    if request.method == "POST":
+        game_id = request.form.get("id")
+        move = request.form.get("move")
 
-    if not game_id or not move:
+        if not game_id or not move:
+            return redirect('/')
+
+        game_data = games.get_game_data_if_to_move(game_id, user.get_logged_in_id())
+
+        if not game_data:
+            return jsonify(successful=False)
+
+        return jsonify(successful=handle_move.process_move(move, database.row_to_dict(game_data)))
+    else:
         return redirect('/')
-
-    game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id(), False)
-
-    if not game_data:
-        return redirect('/')
-
-    return jsonify(handle_move.process_move(move, database.row_to_dict(game_data)))
