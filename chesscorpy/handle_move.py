@@ -1,14 +1,16 @@
 import datetime
+import io
 import chess
+import chess.pgn
 from . import user, database, constants, game_statuses
 
 
 def update_game_db(game_data):
     """ Updates a given game in the database. """
 
-    query = "UPDATE games SET to_move = ?, move_start_time = ?, status = ?, winner = ?, fen = ? WHERE id = ?"
+    query = "UPDATE games SET to_move = ?, move_start_time = ?, status = ?, winner = ?, pgn = ? WHERE id = ?"
     query_args = [game_data["to_move"], game_data["move_start_time"], game_data["status"], game_data["winner"],
-                  game_data["fen"], game_data["id"]]
+                  game_data["pgn"], game_data["id"]]
 
     database.sql_exec(constants.DATABASE_FILE, query, query_args)
 
@@ -54,10 +56,10 @@ def update_game_status(game_status, game_data):
         game_data["status"] = game_statuses.IN_PROGRESS
 
 
-def update_game_data(game_data, game_fen, game_status):
+def update_game_data(game_data, game_pgn, game_status):
     """ Updates the local copy of game data. """
 
-    game_data["fen"] = game_fen
+    game_data["pgn"] = game_pgn
     game_data["move_start_time"] = datetime.datetime.now().replace(microsecond=0)
     update_player_to_move(game_data)
     update_game_status(game_status, game_data)
@@ -74,20 +76,32 @@ def attempt_move(move, game):
         return False
 
 
+def board_load_pgn(board, pgn):
+    """ Loads pgn into a board. """
+
+    game = chess.pgn.read_game(io.StringIO(pgn))
+    for move in game.mainline_moves():
+        board.push(move)
+
+
 def process_move(move, game_data):
     """ Processes a move request from a user. """
 
-    game = chess.Board()
-    if game_data["fen"]:
-        game.set_fen(game_data["fen"])
-
+    board = chess.Board()
     move = chess.Move.from_uci(move)
 
-    if not attempt_move(move, game):
+    if game_data["pgn"]:
+        board_load_pgn(board, game_data["pgn"])
+    else:
+        # TODO: Set headers
+        pass
+
+    if not attempt_move(move, board):
         return False
 
-    update_game_data(game_data, game.fen(), get_game_status(game))
+    game = chess.pgn.Game.from_board(board)
 
+    update_game_data(game_data, str(game).replace('\n', "\\n"), get_game_status(board))
     update_game_db(game_data)
 
     return True

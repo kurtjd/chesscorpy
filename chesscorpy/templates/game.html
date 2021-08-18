@@ -20,7 +20,7 @@
 
   <script>
     var GAME_ID = {{ game_data.id }}
-    var FEN = "{{ game_data.fen }}"
+    var PGN = '{{ game_data.pgn | safe }}'
     var PLAYER_WHITE = "{{ game_data.player_white_name }}"
     var PLAYER_BLACK = "{{ game_data.player_black_name }}"
     var USER_COLOR = "{{ game_data.my_color }}"

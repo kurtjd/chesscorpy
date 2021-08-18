@@ -109,9 +109,9 @@ var board_name = "board"
 var game = new Chess()
 var board = Chessboard(board_name, board_config)
 
-if (FEN != "None")
-    board.position(FEN, false)
-    game.load(FEN)
+if (PGN != "None")
+    game.load_pgn(PGN)
+    board.position(game.fen(), false)
 
 if (USER_COLOR == "white" || USER_COLOR == "none")
     board.orientation("white")
