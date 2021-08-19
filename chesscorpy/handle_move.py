@@ -76,6 +76,17 @@ def attempt_move(move, game):
         return False
 
 
+def regen_pgn_headers(game, game_data):
+    """ Regenerates the PGN headers for the game. """
+
+    game.headers["Event"] = "Correspondence Chess"
+    game.headers["Site"] = "ChessCorPy"
+    game.headers["Date"] = datetime.datetime.strptime(game_data["timestamp"], "%Y-%m-%d %H:%M:%S").strftime("%Y.%m.%d")
+    game.headers["Round"] = '-'
+    game.headers["White"] = user.get_data_by_id(game_data[f"player_white_id"], ["username"])["username"]
+    game.headers["Black"] = user.get_data_by_id(game_data[f"player_black_id"], ["username"])["username"]
+
+
 def board_load_pgn(board, pgn):
     """ Loads pgn into a board. """
 
@@ -92,14 +103,14 @@ def process_move(move, game_data):
 
     if game_data["pgn"]:
         board_load_pgn(board, game_data["pgn"])
-    else:
-        # TODO: Set headers
-        pass
 
     if not attempt_move(move, board):
         return False
 
     game = chess.pgn.Game.from_board(board)
+
+    # Since PGN data is generated from the board, previous headers are lost so re-generate them.
+    regen_pgn_headers(game, game_data)
 
     update_game_data(game_data, str(game).replace('\n', "\\n"), get_game_status(board))
     update_game_db(game_data)
