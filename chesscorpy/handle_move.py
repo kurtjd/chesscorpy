@@ -27,8 +27,7 @@ def update_player_to_move(game_data):
 def get_game_status(game):
     """ Gets the current status of a game. """
 
-    # return game.outcome(claim_draw=True)
-    return game.outcome()
+    return game.outcome(claim_draw=True)
 
 
 def update_game_status(game_status, game_data):
@@ -65,10 +64,10 @@ def update_game_data(game_data, game_pgn, game_status):
     update_game_status(game_status, game_data)
 
 
-def attempt_move(move, game):
+def attempt_move(move_san, game):
     """ Attempts to make a move if valid. """
 
-    # TODO: Check promotion
+    move = game.parse_san(move_san)
     if move in game.legal_moves:
         game.push(move)
         return True
@@ -95,16 +94,15 @@ def board_load_pgn(board, pgn):
         board.push(move)
 
 
-def process_move(move, game_data):
+def process_move(move_san, game_data):
     """ Processes a move request from a user. """
 
     board = chess.Board()
-    move = chess.Move.from_uci(move)
 
     if game_data["pgn"]:
         board_load_pgn(board, game_data["pgn"])
 
-    if not attempt_move(move, board):
+    if not attempt_move(move_san, board):
         return False
 
     game = chess.pgn.Game.from_board(board)

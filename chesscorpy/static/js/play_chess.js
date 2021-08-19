@@ -1,9 +1,9 @@
-function send_move_to_server(move_uci)
+function send_move_to_server(move_san)
 {
     $.post("/move",
         {
             id: GAME_ID,
-            move: move_uci
+            move: move_san
         },
         function(data, status)
         {
@@ -11,6 +11,32 @@ function send_move_to_server(move_uci)
                 alert("Unable to perform move.")
         }
     )
+}
+
+function promptPromotion()
+{
+    promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
+    if ("qrbn".includes(promote_to))
+        return promote_to
+    else
+        return 'q'
+}
+
+function is_legal_move(from, to)
+{
+    legal_moves = game.moves({ square: from, verbose: true })
+    for (var i = 0; i < legal_moves.length; i++)
+    {
+        if (legal_moves[i].to == to)
+            return true
+    }
+
+    return false
+}
+
+function is_promotion(from, to)
+{
+    return game.get(from).type == 'p' && (to[1] == '1' || to[1] == '8')
 }
 
 function end_game(msg)
@@ -58,17 +84,21 @@ function onDrop(source, target)
 {
     unHighlightSquares()
 
-    // TODO: Check promotion
+    if (is_legal_move(source, target) && is_promotion(source, target))
+        promote_to = promptPromotion()
+    else
+        promote_to = 'q'
+
     var move = game.move({
         from: source,
-        to: target
+        to: target,
+        promotion: promote_to
     })
 
     if (move == null)
         return "snapback"
 
-    send_move_to_server(source + target)
-
+    send_move_to_server(move.san)
     check_game()
 }
 
@@ -95,6 +125,11 @@ function onMouseoutSquare(square, piece)
     unHighlightSquares()
 }
 
+function onSnapEnd ()
+{
+    board.position(game.fen())
+}
+
 
 var board_config = {
     position: "start",
@@ -102,7 +137,8 @@ var board_config = {
     onDragStart: onDragStart,
     onDrop: onDrop,
     onMouseoverSquare: onMouseoverSquare,
-    onMouseoutSquare: onMouseoutSquare
+    onMouseoutSquare: onMouseoutSquare,
+    onSnapEnd: onSnapEnd
 }
 
 var board_name = "board"
