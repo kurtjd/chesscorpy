@@ -53,6 +53,31 @@ function moveIsPromotion(from, to)
     return game.get(from).type == 'p' && (to[1] == '1' || to[1] == '8')
 }
 
+function getCapturedPieces(color)
+{
+    var history = game.history({ verbose: true })
+    var captured = {
+        'p': 0,
+        'n': 0,
+        'b': 0,
+        'r': 0,
+        'q': 0
+    }
+
+    for (var i = 0; i < history.length; i++)
+    {
+        var move = history[i]
+
+        if (move.hasOwnProperty("captured") && move.color != color[0])
+        {
+            captured[move.captured]++
+        }
+    }
+
+    alert(color + ": " + JSON.stringify(captured))
+    return captured
+}
+
 function endGame(msg)
 {
     alert(msg)
@@ -186,6 +211,9 @@ if (PGN != "None")
     game.load_pgn(PGN)
     board.position(game.fen(), false)
 }
+
+var captured_white = getCapturedPieces("white")
+var captured_black = getCapturedPieces("black")
 
 if (USER_COLOR == "white" || USER_COLOR == "none")
 {
