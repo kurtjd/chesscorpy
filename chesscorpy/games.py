@@ -1,4 +1,12 @@
-from . import database, user, helpers, handle_errors, game_statuses
+from . import database, user, helpers, handle_errors
+
+
+class Status:
+    NO_MOVE = "no_move"
+    IN_PROGRESS = "in_progress"
+    CHECKMATE = "checkmate"
+    STALEMATE = "stalemate"
+    DRAW = "draw"
 
 
 def get_public_requests():
@@ -83,7 +91,7 @@ def get_active_games(user_id):
     """ Retrieves a list of active games for a user. """
 
     query = "SELECT * FROM games WHERE (player_white_id = ? OR player_black_id = ?) AND " \
-            f"(status = '{game_statuses.NO_MOVE}' OR status = '{game_statuses.IN_PROGRESS}')"
+            f"(status = '{Status.NO_MOVE}' OR status = '{Status.IN_PROGRESS}')"
     query_args = [user_id] * 2
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args)
@@ -92,8 +100,8 @@ def get_active_games(user_id):
 def get_active_games_to_move(user_id):
     """ Retrieves a list of active games for a user where it's also the user's turn to move. """
 
-    query = f"SELECT * FROM games WHERE to_move = ? AND (status = '{game_statuses.NO_MOVE}' " \
-            f"OR status = '{game_statuses.IN_PROGRESS}')"
+    query = f"SELECT * FROM games WHERE to_move = ? AND (status = '{Status.NO_MOVE}' " \
+            f"OR status = '{Status.IN_PROGRESS}')"
     query_args = [user_id]
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args)
@@ -103,8 +111,8 @@ def get_game_history_if_authed(player_id, viewer_id):
     """ Retrieves a list of completed games of a user if the viewer is authorized to see it. """
 
     query = "SELECT * FROM games WHERE (public = 1 OR player_white_id = ? OR player_black_id = ?) AND " \
-            f"(player_white_id = ? OR player_black_id = ?) AND status != '{game_statuses.NO_MOVE}' " \
-            f"AND status != '{game_statuses.IN_PROGRESS}'"
+            f"(player_white_id = ? OR player_black_id = ?) AND status != '{Status.NO_MOVE}' " \
+            f"AND status != '{Status.IN_PROGRESS}'"
     query_args = [viewer_id] * 2 + [player_id] * 2
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args)

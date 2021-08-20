@@ -2,7 +2,7 @@ import datetime
 import io
 import chess
 import chess.pgn
-from . import user, database, game_statuses
+from . import user, database, games
 
 
 def update_game_db(game_data):
@@ -35,10 +35,10 @@ def update_game_status(game_status, game_data):
 
     if game_status:
         status_options = {
-            game_status.termination.CHECKMATE: game_statuses.CHECKMATE,
-            game_status.termination.STALEMATE: game_statuses.STALEMATE,
-            game_status.termination.INSUFFICIENT_MATERIAL: game_statuses.DRAW,
-            game_status.termination.THREEFOLD_REPETITION: game_statuses.DRAW
+            game_status.termination.CHECKMATE: games.Status.CHECKMATE,
+            game_status.termination.STALEMATE: games.Status.STALEMATE,
+            game_status.termination.INSUFFICIENT_MATERIAL: games.Status.DRAW,
+            game_status.termination.THREEFOLD_REPETITION: games.Status.DRAW
         }
 
         game_data["status"] = status_options[game_status.termination]
@@ -55,7 +55,7 @@ def update_game_status(game_status, game_data):
         else:
             game_data["winner"] = user.DRAW_USER_ID
     else:
-        game_data["status"] = game_statuses.IN_PROGRESS
+        game_data["status"] = games.Status.IN_PROGRESS
 
 
 def update_game_data(game_data, game_pgn, game_status):
