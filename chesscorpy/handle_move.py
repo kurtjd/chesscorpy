@@ -48,9 +48,12 @@ def update_game_status(game_status, game_data):
         elif game_status.winner == chess.BLACK:
             win_color = "black"
         else:
-            win_color = constants.DRAW_USER_ID
+            win_color = None
 
-        game_data["winner"] = user.get_data_by_id(game_data[f"player_{win_color}_id"], ["id"])["id"]
+        if win_color:
+            game_data["winner"] = user.get_data_by_id(game_data[f"player_{win_color}_id"], ["id"])["id"]
+        else:
+            game_data["winner"] = constants.DRAW_USER_ID
     else:
         game_data["status"] = game_statuses.IN_PROGRESS
 
