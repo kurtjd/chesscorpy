@@ -20,7 +20,7 @@ function getChat() {
         {
             id: GAME_ID
         },
-        function (data, success) { // TODO: Handle other server errors
+        function (data, success) {
             if (data && success === "success") {
                 setChatDisplay(data)
             } else {
