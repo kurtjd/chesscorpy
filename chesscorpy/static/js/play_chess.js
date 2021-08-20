@@ -53,6 +53,12 @@ function moveIsPromotion(from, to)
     return game.get(from).type == 'p' && (to[1] == '1' || to[1] == '8')
 }
 
+function setCapturedDisplay()
+{
+    $("#captured").html("Captured White: " + JSON.stringify(captured_white) +
+                        "<br>Captured Black: " + JSON.stringify(captured_black))
+}
+
 function getCapturedPieces(color)
 {
     var history = game.history({ verbose: true })
@@ -154,6 +160,11 @@ function onPieceMove(source, target)
         return "snapback"
     }
 
+    // For now naively re-check for captured pieces even if move didn't result in capture.
+    captured_white = getCapturedPieces("white")
+    captured_black = getCapturedPieces("black")
+    setCapturedDisplay()
+
     postMove(move.san)
     checkGame()
 }
@@ -211,6 +222,7 @@ if (PGN != "None")
 
 var captured_white = getCapturedPieces("white")
 var captured_black = getCapturedPieces("black")
+setCapturedDisplay()
 
 if (USER_COLOR == "white" || USER_COLOR == "none")
 {
