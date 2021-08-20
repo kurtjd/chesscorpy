@@ -21,7 +21,7 @@ function getChat() {
             id: GAME_ID
         },
         function (data, success) { // TODO: Handle other server errors
-            if (success === "success") {
+            if (data && success === "success") {
                 setChatDisplay(data)
             } else {
                 alert("Unable to load chat messages!")
