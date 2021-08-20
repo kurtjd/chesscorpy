@@ -1,6 +1,15 @@
 from flask import session
 from werkzeug.security import generate_password_hash
-from . import constants, database
+from . import database
+
+
+USERNAME_MAX_LEN = 15
+DEFAULT_RATING = 1000
+MIN_RATING = 1
+MAX_RATING = 3000
+PUBLIC_USER_ID = 0
+DRAW_USER_ID = 0
+USER_SESSION = "user_id"
 
 
 def get_data_by_id(userid, fields='*'):
@@ -9,7 +18,7 @@ def get_data_by_id(userid, fields='*'):
     query = f"SELECT {','.join(fields)} FROM users WHERE id = ? LIMIT 1"
     query_args = [userid]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def get_data_by_name(username, fields=('*',), case_sensitive=False):
@@ -22,13 +31,13 @@ def get_data_by_name(username, fields=('*',), case_sensitive=False):
         query = f"SELECT {','.join(fields)} FROM users WHERE username = ? LIMIT 1"
         query_args = [username]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def logged_in():
     """ Checks if the user is logged in. """
 
-    return True if session.get(constants.USER_SESSION) else False
+    return True if session.get(USER_SESSION) else False
 
 
 def create(username, password, email, rating, notifications):
@@ -37,7 +46,7 @@ def create(username, password, email, rating, notifications):
     query = "INSERT INTO users (username, password, email, rating, notifications) VALUES(?, ?, ?, ?, ?)"
     query_args = [username, generate_password_hash(password), email, rating, notifications]
 
-    database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def auto_login(username):
@@ -46,20 +55,20 @@ def auto_login(username):
     query = "SELECT id FROM users WHERE username=?"
     query_args = [username]
 
-    user_id = database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    user_id = database.sql_exec(database.DATABASE_FILE, query, query_args, False)
     create_session(user_id["id"])
 
 
 def get_logged_in_id():
     """ Gets the id of the currently logged-in user. """
 
-    return session[constants.USER_SESSION]
+    return session[USER_SESSION]
 
 
 def create_session(userid):
     """ Creates a session for the given user id. """
 
-    session[constants.USER_SESSION] = userid
+    session[USER_SESSION] = userid
 
 
 def delete_session():
@@ -69,10 +78,11 @@ def delete_session():
 
 
 def set_rating(rating):
-    """ Sets the user's starting rating when given a rating as a string. """
+    """ Sets the user's starting rating. """
 
-    # If rating is not a number, silently set it to default.
-    if not rating:
-        rating = constants.DEFAULT_RATING
+    try:
+        rating = int(rating)
+    except ValueError:
+        rating = DEFAULT_RATING
 
     return rating

@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from . import constants
+from . import user
 
 
 class Username(Enum):
@@ -12,7 +12,7 @@ class Username(Enum):
     def check_valid(cls, username):
         if not username:
             return cls.NONE
-        elif len(username) > constants.USERNAME_MAX_LEN:
+        elif len(username) > user.USERNAME_MAX_LEN:
             return cls.TOO_LONG
         elif username.lower() == "public":
             return cls.PUBLIC
@@ -53,7 +53,7 @@ class Rating(Enum):
     def check_valid(cls, rating):
         if rating == '':
             return cls.NONE
-        elif not (constants.MIN_RATING <= rating <= constants.MAX_RATING):
+        elif not (user.MIN_RATING <= rating <= user.MAX_RATING):
             return cls.OUT_OF_BOUNDS
         else:
             return cls.VALID
@@ -103,9 +103,9 @@ class GameRatings(Enum):
             return cls.MIN_NONE
         elif max_ == '':
             return cls.MAX_NONE
-        elif not (constants.MIN_RATING <= min_ <= constants.MAX_RATING):
+        elif not (user.MIN_RATING <= min_ <= user.MAX_RATING):
             return cls.MIN_OUT_OF_BOUNDS
-        elif not (constants.MIN_RATING <= max_ <= constants.MAX_RATING):
+        elif not (user.MIN_RATING <= max_ <= user.MAX_RATING):
             return cls.MAX_OUT_OF_BOUNDS
         elif min_ > max_:
             return cls.MIN_TOO_HIGH

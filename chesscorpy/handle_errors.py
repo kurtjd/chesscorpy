@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash
-from . import constants, input_validation, helpers, user
+from . import input_validation, helpers, user
 
 
 def for_register(username, password, email, rating):
@@ -9,12 +9,12 @@ def for_register(username, password, email, rating):
     error_msgs = {
         input_validation.Username.NONE: "Please provide a username.",
         input_validation.Username.PUBLIC: "'Public' may not be used as a username.",
-        input_validation.Username.TOO_LONG: f"Username cannot be greater than {constants.USERNAME_MAX_LEN} "
+        input_validation.Username.TOO_LONG: f"Username cannot be greater than {user.USERNAME_MAX_LEN} "
                                             "characters.",
         input_validation.Password.NONE: "Please provide a password.",
         input_validation.Email.NONE: "Please provide an email address.",
-        input_validation.Rating.OUT_OF_BOUNDS: f"Rating must be a number between {constants.MIN_RATING} and "
-                                               f"{constants.MAX_RATING}"
+        input_validation.Rating.OUT_OF_BOUNDS: f"Rating must be a number between {user.MIN_RATING} and "
+                                               f"{user.MAX_RATING}"
     }
 
     username_check = input_validation.Username.check_valid(username)
@@ -83,13 +83,13 @@ def for_newgame_input(username, color, turnlimit, minrating, maxrating):
         input_validation.GameRatings.MIN_NONE: "Please enter the minimum rating you wish for "
                                                "people to see your challenge.",
         input_validation.GameRatings.MIN_OUT_OF_BOUNDS: "Please enter a minimum rating between "
-                                                        f"{constants.MIN_RATING} and {constants.MAX_RATING}.",
+                                                        f"{user.MIN_RATING} and {user.MAX_RATING}.",
         input_validation.GameRatings.MIN_TOO_HIGH: "Please enter a minimum rating that is "
                                                    "less than or equal to the maximum rating.",
         input_validation.GameRatings.MAX_NONE: "Please enter the maximum rating you wish for "
                                                "people to see your challenge.",
         input_validation.GameRatings.MAX_OUT_OF_BOUNDS: "Please enter a maximum rating between "
-                                                        f"{constants.MIN_RATING} and {constants.MAX_RATING}.",
+                                                        f"{user.MIN_RATING} and {user.MAX_RATING}.",
     }
 
     username_check = input_validation.Username.check_valid(username)

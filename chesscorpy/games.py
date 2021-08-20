@@ -1,4 +1,4 @@
-from . import constants, database, user, helpers, handle_errors, game_statuses
+from . import database, user, helpers, handle_errors, game_statuses
 
 
 def get_public_requests():
@@ -8,9 +8,9 @@ def get_public_requests():
             "users.username, users.rating FROM game_requests JOIN users ON game_requests.user_id = users.id WHERE " \
             "opponent_id = ? AND user_id != ? AND (SELECT rating FROM users WHERE id = ? LIMIT 1) " \
             "BETWEEN min_rating AND max_rating"
-    query_args = [constants.PUBLIC_USER_ID] + [user.get_logged_in_id()] * 2
+    query_args = [user.PUBLIC_USER_ID] + [user.get_logged_in_id()] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def get_direct_requests():
@@ -21,7 +21,7 @@ def get_direct_requests():
             "opponent_id = ?"
     query_args = [user.get_logged_in_id()]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def create_request(user_id, opponent_id, turnlimit, minrating, maxrating, color, is_public):
@@ -31,13 +31,13 @@ def create_request(user_id, opponent_id, turnlimit, minrating, maxrating, color,
             "VALUES(?, ?, ?, ?, ?, ?, ?)"
     query_args = [user_id, opponent_id, turnlimit, minrating, maxrating, color, is_public]
 
-    database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def delete_request(request_id):
     """ Deletes a game request. """
 
-    database.sql_exec(constants.DATABASE_FILE, "DELETE FROM game_requests WHERE id = ?", [request_id])
+    database.sql_exec(database.DATABASE_FILE, "DELETE FROM game_requests WHERE id = ?", [request_id])
 
 
 def get_request_data_if_authed(request_id, user_id, fields=('*',)):
@@ -46,7 +46,7 @@ def get_request_data_if_authed(request_id, user_id, fields=('*',)):
     query = f"SELECT {','.join(fields)} FROM game_requests WHERE id = ? AND (opponent_id = 0 OR opponent_id = ?)"
     query_args = [request_id, user_id]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def create_game(white_id, black_id, turnlimit, is_public):
@@ -56,7 +56,7 @@ def create_game(white_id, black_id, turnlimit, is_public):
             "VALUES(?, ?, ?, ?, ?)"
     query_args = [white_id, black_id, turnlimit, white_id, is_public]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False, True)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False, True)
 
 
 def get_game_data_if_authed(game_id, user_id, auth_public=True):
@@ -67,7 +67,7 @@ def get_game_data_if_authed(game_id, user_id, auth_public=True):
     query = f"SELECT * FROM games WHERE id = ? AND (player_white_id = ? OR player_black_id = ?{public}) LIMIT 1"
     query_args = [game_id] + [user_id] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def get_game_data_if_to_move(game_id, user_id):
@@ -76,7 +76,7 @@ def get_game_data_if_to_move(game_id, user_id):
     query = f"SELECT * FROM games WHERE id = ? AND to_move = ? LIMIT 1"
     query_args = [game_id, user_id]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args, False)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
 def get_active_games(user_id):
@@ -86,7 +86,7 @@ def get_active_games(user_id):
             f"(status = '{game_statuses.NO_MOVE}' OR status = '{game_statuses.IN_PROGRESS}')"
     query_args = [user_id] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def get_active_games_to_move(user_id):
@@ -96,7 +96,7 @@ def get_active_games_to_move(user_id):
             f"OR status = '{game_statuses.IN_PROGRESS}')"
     query_args = [user_id]
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def get_game_history_if_authed(player_id, viewer_id):
@@ -107,7 +107,7 @@ def get_game_history_if_authed(player_id, viewer_id):
             f"AND status != '{game_statuses.IN_PROGRESS}'"
     query_args = [viewer_id] * 2 + [player_id] * 2
 
-    return database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def format_active_games(games_data):
@@ -160,4 +160,4 @@ def get_opponent_id(username):
 
         return opponent["id"]
     else:
-        return constants.PUBLIC_USER_ID
+        return user.PUBLIC_USER_ID

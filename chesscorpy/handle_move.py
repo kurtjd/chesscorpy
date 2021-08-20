@@ -2,7 +2,7 @@ import datetime
 import io
 import chess
 import chess.pgn
-from . import user, database, constants, game_statuses
+from . import user, database, game_statuses
 
 
 def update_game_db(game_data):
@@ -12,7 +12,7 @@ def update_game_db(game_data):
     query_args = [game_data["to_move"], game_data["move_start_time"], game_data["status"], game_data["winner"],
                   game_data["pgn"], game_data["id"]]
 
-    database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def update_player_to_move(game_data):
@@ -53,7 +53,7 @@ def update_game_status(game_status, game_data):
         if win_color:
             game_data["winner"] = user.get_data_by_id(game_data[f"player_{win_color}_id"], ["id"])["id"]
         else:
-            game_data["winner"] = constants.DRAW_USER_ID
+            game_data["winner"] = user.DRAW_USER_ID
     else:
         game_data["status"] = game_statuses.IN_PROGRESS
 

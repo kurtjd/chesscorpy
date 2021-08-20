@@ -1,4 +1,4 @@
-from chesscorpy import constants
+from chesscorpy import user
 from chesscorpy.input_validation import Username, Password, Email, Rating, GameColor, TurnLimit, GameRatings
 
 
@@ -6,7 +6,7 @@ def test_username_check_valid():
     assert Username.check_valid('') is Username.NONE
     assert Username.check_valid("Very Long Username This Is") is Username.TOO_LONG
     assert Username.check_valid("JohnDoe") is Username.VALID
-    assert Username.check_valid('A' * constants.USERNAME_MAX_LEN) is Username.VALID
+    assert Username.check_valid('A' * user.USERNAME_MAX_LEN) is Username.VALID
 
 
 def test_password_check_valid():
@@ -25,8 +25,8 @@ def test_rating_check_valid():
     assert Rating.check_valid(-100) is Rating.OUT_OF_BOUNDS
     assert Rating.check_valid(9000) is Rating.OUT_OF_BOUNDS
     assert Rating.check_valid(2600) is Rating.VALID
-    assert Rating.check_valid(constants.MIN_RATING) is Rating.VALID
-    assert Rating.check_valid(constants.MAX_RATING) is Rating.VALID
+    assert Rating.check_valid(user.MIN_RATING) is Rating.VALID
+    assert Rating.check_valid(user.MAX_RATING) is Rating.VALID
 
 
 def test_gamecolor_check_valid():
@@ -52,5 +52,5 @@ def test_gameratings_check_valid():
     assert GameRatings.check_valid(1200, 9000) is GameRatings.MAX_OUT_OF_BOUNDS
     assert GameRatings.check_valid(2600, 1200) is GameRatings.MIN_TOO_HIGH
     assert GameRatings.check_valid(1200, 2600) is GameRatings.VALID
-    assert GameRatings.check_valid(constants.MIN_RATING, constants.MAX_RATING) is \
+    assert GameRatings.check_valid(user.MIN_RATING, user.MAX_RATING) is \
            GameRatings.VALID

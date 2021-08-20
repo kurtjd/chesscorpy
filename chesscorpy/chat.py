@@ -1,4 +1,7 @@
-from . import constants, database, user
+from . import database, user
+
+
+CHAT_MSG_MAX_LEN = 100
 
 
 def get_chats(game_id):
@@ -7,7 +10,7 @@ def get_chats(game_id):
     query = "SELECT * FROM chats WHERE game_id = ? ORDER BY timestamp ASC"
     query_args = [game_id]
 
-    chats = database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    chats = database.sql_exec(database.DATABASE_FILE, query, query_args)
     chats = [dict(chat) for chat in chats]
 
     # Add username to the chat data
@@ -23,4 +26,4 @@ def new_chat(game_id, user_id, msg):
     query = "INSERT INTO chats (game_id, user_id, contents) VALUES(?, ?, ?)"
     query_args = [game_id, user_id, msg]
 
-    database.sql_exec(constants.DATABASE_FILE, query, query_args)
+    database.sql_exec(database.DATABASE_FILE, query, query_args)

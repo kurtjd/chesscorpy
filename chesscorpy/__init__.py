@@ -1,6 +1,6 @@
 import flask_session
 from flask import Flask, render_template, redirect, request, jsonify, escape
-from . import constants, helpers, database, input_validation, handle_errors, user, games, handle_move, game_statuses
+from . import helpers, database, input_validation, handle_errors, user, games, handle_move, game_statuses
 from . import chat
 
 
@@ -212,7 +212,7 @@ def move_request():
                                          game_data["status"] != game_statuses.IN_PROGRESS):
             return jsonify(successful=False)
 
-        return jsonify(successful=move.process_move(move, database.row_to_dict(game_data)))
+        return jsonify(successful=handle_move.process_move(move, database.row_to_dict(game_data)))
     else:
         return redirect('/')
 
@@ -229,7 +229,7 @@ def handle_chat():
         user_id = request.form.get("user_id", type=int)
         msg = escape(request.form.get("msg"))
 
-        if not game_id or not user_id or not msg or len(msg) > constants.CHAT_MSG_MAX_LEN or \
+        if not game_id or not user_id or not msg or len(msg) > chat.CHAT_MSG_MAX_LEN or \
                 user_id != user.get_logged_in_id() or not games.get_game_data_if_authed(game_id, user_id, False):
             return jsonify(successful=False)
 
