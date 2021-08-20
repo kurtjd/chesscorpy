@@ -17,14 +17,25 @@
   <div id="player1"></div><br>
   <div id="board" style="width: 500px"></div><br>
   <div id="player2"></div><br>
-  <div id="captured"></div>
+  <div id="captured"></div><br>
+  <div id="chat"></div><br>
+
+  {% if game_data.my_color != "none" %}
+  <div id="chat_form_div">
+    <form id="chat_form" onsubmit="postChat(); return false">
+      <input type="text" id="msg"><input type="submit" value="Send">
+    </form>
+  </div>
+  {% endif %}
 
   <script>
-    const GAME_ID = {{ game_data.id }}
-    const PGN = '{{ game_data.pgn | safe }}'
     const PLAYER_WHITE = "{{ game_data.player_white_name }}"
     const PLAYER_BLACK = "{{ game_data.player_black_name }}"
+    const GAME_ID = {{ game_data.id }}
+    const PLAYER_WHITE_ID = {{ game_data.player_white_id }}
+    const PLAYER_BLACK_ID = {{ game_data.player_black_id }}
     const USER_COLOR = "{{ game_data.my_color }}"
+    const PGN = '{{ game_data.pgn | safe }}'
   </script>
   <script src="/static/js/play_chess.js"></script>
 {% endblock %}

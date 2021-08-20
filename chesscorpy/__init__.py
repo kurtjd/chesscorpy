@@ -1,6 +1,7 @@
 import flask_session
-from flask import Flask, render_template, redirect, request, jsonify
+from flask import Flask, render_template, redirect, request, jsonify, escape
 from . import constants, helpers, database, input_validation, handle_errors, user, games, handle_move, game_statuses
+from . import chat
 
 
 app = Flask(__name__)
@@ -204,17 +205,34 @@ def move_request():
     if request.method == "POST":
         game_id = request.form.get("id")
         move = request.form.get("move")
-
-        if not game_id or not move:
-            return redirect('/')
-
         game_data = games.get_game_data_if_to_move(game_id, user.get_logged_in_id())
 
-        # Don't let player move in an already completed game.
-        if not game_data or (game_data["status"] != game_statuses.NO_MOVE and
-                             game_data["status"] != game_statuses.IN_PROGRESS):
+        # Don't let user move in an already completed game or game they are not a player of.
+        if not game_data or not move or (game_data["status"] != game_statuses.NO_MOVE and
+                                         game_data["status"] != game_statuses.IN_PROGRESS):
             return jsonify(successful=False)
 
-        return jsonify(successful=handle_move.process_move(move, database.row_to_dict(game_data)))
+        return jsonify(successful=move.process_move(move, database.row_to_dict(game_data)))
     else:
         return redirect('/')
+
+
+@app.route("/chat", methods=["GET", "POST"])
+@helpers.login_required
+def handle_chat():
+    """ Sends or retrieves chat messages. """
+
+    if request.method == "GET":
+        return jsonify(chat.get_chats(request.args.get("id", type=int)))
+    else:
+        game_id = request.form.get("game_id", type=int)
+        user_id = request.form.get("user_id", type=int)
+        msg = escape(request.form.get("msg"))
+
+        if not game_id or not user_id or not msg or len(msg) > constants.CHAT_MSG_MAX_LEN or \
+                user_id != user.get_logged_in_id() or not games.get_game_data_if_authed(game_id, user_id, False):
+            return jsonify(successful=False)
+
+        chat.new_chat(game_id, user_id, msg)
+
+        return jsonify(successful=True)

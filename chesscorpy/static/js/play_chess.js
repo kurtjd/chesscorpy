@@ -1,9 +1,65 @@
+function getUserId() {
+    if (USER_COLOR === "white") {
+        return PLAYER_WHITE_ID
+    } else if (USER_COLOR === "black") {
+        return PLAYER_BLACK_ID
+    } else {
+        return "none"
+    }
+}
+
+function setChatDisplay(chats) {
+    $("#chat").html('')
+    for (const msg of chats) {
+        $("#chat").append("<b>" + msg["user_name"] + "</b>: " + msg["contents"] + "<br>")
+    }
+}
+
+function getChat() {
+    $.get("/chat",
+        {
+            id: GAME_ID
+        },
+        function (data, success) { // TODO: Handle other server errors
+            if (success === "success") {
+                setChatDisplay(data)
+            } else {
+                alert("Unable to load chat messages!")
+            }
+        }
+    )
+}
+
+function postChat() {
+    const user_id = getUserId()
+
+    if (user_id === "none") {
+        return false
+    }
+
+    $.post("/chat",
+        {
+            game_id: GAME_ID,
+            user_id: user_id,
+            msg: $("#msg").val()
+        },
+        function (data, success) {
+            if (data.successful && success === "success") {
+                getChat()
+                $("#msg").val('')
+            } else {
+                alert("Unable to send chat message!")
+            }
+        }
+    )
+}
+
 function postMove(move_san) {
     $.post("/move", {
             id: GAME_ID,
             move: move_san
         },
-        function(data, status) {
+        function (data, status) {
             if (!data.successful || status !== "success") {
                 alert("Unable to perform move.")
                 game.undo()
@@ -184,3 +240,5 @@ if (board.orientation() === "white") {
     $("#player1").html("<b>" + PLAYER_WHITE + "</b>")
     $("#player2").html("<b>" + PLAYER_BLACK + "</b>")
 }
+
+getChat()
