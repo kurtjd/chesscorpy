@@ -6,7 +6,7 @@ function postMove(move_san) {
         },
         function(data, status) {
             // If move was unsuccessful on the server, undo the move on the local game.
-            if (!data.successful) {
+            if (!data.successful || status !== "success") {
                 alert("Unable to perform move.")
                 game.undo()
                 board.position(game.fen())
