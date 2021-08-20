@@ -19,11 +19,11 @@
   <div id="player2"></div>
 
   <script>
-    var GAME_ID = {{ game_data.id }}
-    var PGN = '{{ game_data.pgn | safe }}'
-    var PLAYER_WHITE = "{{ game_data.player_white_name }}"
-    var PLAYER_BLACK = "{{ game_data.player_black_name }}"
-    var USER_COLOR = "{{ game_data.my_color }}"
+    const GAME_ID = {{ game_data.id }}
+    const PGN = '{{ game_data.pgn | safe }}'
+    const PLAYER_WHITE = "{{ game_data.player_white_name }}"
+    const PLAYER_BLACK = "{{ game_data.player_black_name }}"
+    const USER_COLOR = "{{ game_data.my_color }}"
   </script>
   <script src="/static/js/play_chess.js"></script>
 {% endblock %}

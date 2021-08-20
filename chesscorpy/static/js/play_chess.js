@@ -74,7 +74,6 @@ function getCapturedPieces(color)
         }
     }
 
-    alert(color + ": " + JSON.stringify(captured))
     return captured
 }
 
@@ -105,12 +104,12 @@ function checkGame()
 
 function unHighlightSquares()
 {
-    $('#' + board_name + " .square-55d63").css("background", '')
+    $('#' + BOARD_NAME + " .square-55d63").css("background", '')
 }
 
 function highlightSquare(square)
 {
-    var $square = $('#' + board_name + " .square-" + square)
+    var $square = $('#' + BOARD_NAME + " .square-" + square)
     var background = "#a9a9a9"
 
     if ($square.hasClass("black-3c85d"))
@@ -200,9 +199,9 @@ var board_config = {
     onSnapEnd: onSnapEnd
 }
 
-var board_name = "board"
+const BOARD_NAME = "board"
 var game = new Chess()
-var board = Chessboard(board_name, board_config)
+var board = Chessboard(BOARD_NAME, board_config)
 
 if (PGN != "None")
 {
