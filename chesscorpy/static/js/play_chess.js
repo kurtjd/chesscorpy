@@ -135,15 +135,13 @@ function onPieceMove(source, target)
 {
     unHighlightSquares()
 
-    var promote_to
-
     if (moveIsLegal(source, target) && moveIsPromotion(source, target))
     {
-        promote_to = promptPromotion()
+        var promote_to = promptPromotion()
     }
     else
     {
-        promote_to = 'q'
+        var promote_to = 'q'
     }
 
     var move = game.move({
