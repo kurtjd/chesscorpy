@@ -1,3 +1,4 @@
 /venv/
 .idea
 /.pytest_cache/
+/tests/flask_session/
