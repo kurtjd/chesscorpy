@@ -1,11 +1,9 @@
 function postMove(move_san) {
-    $.post("/move",
-        {
+    $.post("/move", {
             id: GAME_ID,
             move: move_san
         },
         function(data, status) {
-            // If move was unsuccessful on the server, undo the move on the local game.
             if (!data.successful || status !== "success") {
                 alert("Unable to perform move.")
                 game.undo()
@@ -120,8 +118,8 @@ function onPieceMove(source, target) {
     captured_black = getCapturedPieces("black")
     setCapturedDisplay()
 
-    postMove(move.san)
     checkGame()
+    postMove(move.san)
 }
 
 function onMouseoverSquare(square, piece) {
