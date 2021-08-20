@@ -1,4 +1,4 @@
-function send_move_to_server(move_san)
+function postMove(move_san)
 {
     $.post("/move",
         {
@@ -7,53 +7,75 @@ function send_move_to_server(move_san)
         },
         function(data, status)
         {
+            // If move was unsuccessful on the server, undo the move on the local game.
             if (!data.successful)
+            {
                 alert("Unable to perform move.")
+                game.undo()
+                board.position(game.fen())
+            }
         }
     )
 }
 
 function promptPromotion()
 {
-    promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
+    var promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
+
     if ("qrbn".includes(promote_to))
+    {
         return promote_to
+    }
     else
+    {
         return 'q'
+    }
 }
 
-function is_legal_move(from, to)
+function moveIsLegal(from, to)
 {
-    legal_moves = game.moves({ square: from, verbose: true })
+    var legal_moves = game.moves({ square: from, verbose: true })
+
     for (var i = 0; i < legal_moves.length; i++)
     {
         if (legal_moves[i].to == to)
+        {
             return true
+        }
     }
 
     return false
 }
 
-function is_promotion(from, to)
+function moveIsPromotion(from, to)
 {
+    // Check if piece is pawn and if it is about to move to the 1st or 8th rank.
     return game.get(from).type == 'p' && (to[1] == '1' || to[1] == '8')
 }
 
-function end_game(msg)
+function endGame(msg)
 {
     alert(msg)
 }
 
-function check_game()
+function checkGame()
 {
     if (game.in_checkmate())
-        end_game("Game over. Checkmate!")
+    {
+        endGame("Game over. Checkmate!")
+    }
     else if (game.in_draw())
-        end_game("Game over. Draw!")
+    {
+        endGame("Game over. Draw!")
+    }
     else if (game.in_stalemate())
-        end_game("Game over. Stalemate!")
+    {
+        endGame("Game over. Stalemate!")
+    }
     else if (game.in_threefold_repetition())
-        end_game("Game over. Draw by three-fold repetition!")
+    {
+        endGame("Game over. Draw by three-fold repetition!")
+    }
 }
 
 function unHighlightSquares()
@@ -64,8 +86,8 @@ function unHighlightSquares()
 function highlightSquare(square)
 {
     var $square = $('#' + board_name + " .square-" + square)
-
     var background = "#a9a9a9"
+
     if ($square.hasClass("black-3c85d"))
     {
         background = "#696969"
@@ -74,20 +96,30 @@ function highlightSquare(square)
     $square.css("background", background)
 }
 
-function onDragStart(source, piece, position, orientation)
+function onPieceDrag(source, piece, position, orientation)
 {
+    // Checks that it's the selected piece's color's turn to move, that it is the player's turn,
+    // and that the game is not over.
     if (game.turn() != piece[0] || game.turn() != USER_COLOR[0] || game.game_over())
+    {
         return false
+    }
 }
 
-function onDrop(source, target)
+function onPieceMove(source, target)
 {
     unHighlightSquares()
 
-    if (is_legal_move(source, target) && is_promotion(source, target))
+    var promote_to
+
+    if (moveIsLegal(source, target) && moveIsPromotion(source, target))
+    {
         promote_to = promptPromotion()
+    }
     else
+    {
         promote_to = 'q'
+    }
 
     var move = game.move({
         from: source,
@@ -96,10 +128,12 @@ function onDrop(source, target)
     })
 
     if (move == null)
+    {
         return "snapback"
+    }
 
-    send_move_to_server(move.san)
-    check_game()
+    postMove(move.san)
+    checkGame()
 }
 
 function onMouseoverSquare(square, piece)
@@ -110,7 +144,9 @@ function onMouseoverSquare(square, piece)
     })
 
     if (moves.length == 0 || game.turn() != USER_COLOR[0])
+    {
         return
+    }
 
     highlightSquare(square)
 
@@ -125,7 +161,7 @@ function onMouseoutSquare(square, piece)
     unHighlightSquares()
 }
 
-function onSnapEnd ()
+function onSnapEnd()
 {
     board.position(game.fen())
 }
@@ -134,8 +170,8 @@ function onSnapEnd ()
 var board_config = {
     position: "start",
     draggable: true,
-    onDragStart: onDragStart,
-    onDrop: onDrop,
+    onDragStart: onPieceDrag,
+    onDrop: onPieceMove,
     onMouseoverSquare: onMouseoverSquare,
     onMouseoutSquare: onMouseoutSquare,
     onSnapEnd: onSnapEnd
@@ -146,13 +182,19 @@ var game = new Chess()
 var board = Chessboard(board_name, board_config)
 
 if (PGN != "None")
+{
     game.load_pgn(PGN)
     board.position(game.fen(), false)
+}
 
 if (USER_COLOR == "white" || USER_COLOR == "none")
+{
     board.orientation("white")
+}
 else
+{
     board.orientation("black")
+}
 
 if (board.orientation() == "white")
 {
