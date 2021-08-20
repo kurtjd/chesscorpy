@@ -20,7 +20,7 @@ function postMove(move_san)
 
 function promptPromotion()
 {
-    var promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
+    let promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
 
     if ("qrbn".includes(promote_to))
     {
@@ -34,7 +34,7 @@ function promptPromotion()
 
 function moveIsLegal(from, to)
 {
-    var legal_moves = game.moves({ square: from, verbose: true })
+    let legal_moves = game.moves({ square: from, verbose: true })
 
     for (let i = 0; i < legal_moves.length; i++)
     {
@@ -61,8 +61,8 @@ function setCapturedDisplay()
 
 function getCapturedPieces(color)
 {
-    var history = game.history({ verbose: true })
-    var captured = {
+    let history = game.history({ verbose: true })
+    let captured = {
         'p': 0,
         'n': 0,
         'b': 0,
@@ -115,8 +115,8 @@ function unHighlightSquares()
 
 function highlightSquare(square)
 {
-    var $square = $('#' + BOARD_NAME + " .square-" + square)
-    var background = "#a9a9a9"
+    let $square = $('#' + BOARD_NAME + " .square-" + square)
+    let background = "#a9a9a9"
 
     if ($square.hasClass("black-3c85d"))
     {
@@ -149,7 +149,7 @@ function onPieceMove(source, target)
         var promote_to = 'q'
     }
 
-    var move = game.move({
+    let move = game.move({
         from: source,
         to: target,
         promotion: promote_to
@@ -171,7 +171,7 @@ function onPieceMove(source, target)
 
 function onMouseoverSquare(square, piece)
 {
-    var moves = game.moves({
+    let moves = game.moves({
         square: square,
         verbose: true
     })
@@ -200,7 +200,7 @@ function onSnapEnd()
 }
 
 
-var board_config = {
+let board_config = {
     position: "start",
     draggable: true,
     onDragStart: onPieceDrag,
@@ -211,8 +211,8 @@ var board_config = {
 }
 
 const BOARD_NAME = "board"
-var game = new Chess()
-var board = Chessboard(BOARD_NAME, board_config)
+let game = new Chess()
+let board = Chessboard(BOARD_NAME, board_config)
 
 if (PGN != "None")
 {
@@ -220,8 +220,8 @@ if (PGN != "None")
     board.position(game.fen(), false)
 }
 
-var captured_white = getCapturedPieces("white")
-var captured_black = getCapturedPieces("black")
+let captured_white = getCapturedPieces("white")
+let captured_black = getCapturedPieces("black")
 setCapturedDisplay()
 
 if (USER_COLOR == "white" || USER_COLOR == "none")
