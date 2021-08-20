@@ -31,7 +31,7 @@ def register():
         password = request.form.get("password")
         email = request.form.get("email")
         notifications = 0 if not request.form.get("notifications") else 1
-        rating = user.set_rating_from_str(request.form.get("rating"))
+        rating = user.set_rating(request.form.get("rating", type=int))
 
         errors = handle_errors.for_register(username, password, email, rating)
         if errors:
@@ -121,9 +121,9 @@ def newgame():
 def start():
     """ Creates a game from a game request. """
 
-    request_id = request.args.get("id")
+    request_id = request.args.get("id", type=int)
 
-    if not request_id or not request_id.isdigit():
+    if not request_id:
         return redirect("/")
 
     game_request = games.get_request_data_if_authed(request_id, user.get_logged_in_id())
@@ -145,7 +145,7 @@ def start():
 def game():
     """ Generates a game board based on the status of the game and allows user to make moves. """
 
-    game_id = request.args.get("id")
+    game_id = request.args.get("id", type=int)
     game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id())
 
     if not game_data:
@@ -185,7 +185,7 @@ def mygames():
 def history():
     """ Displays the game history of a user. """
 
-    user_id = request.args.get("id")
+    user_id = request.args.get("id", type=int)
     user_ = user.get_data_by_id(user_id, ["username"])
 
     if not user_:
@@ -203,7 +203,7 @@ def move_request():
     """ Processes a move request for a game by a user. """
 
     if request.method == "POST":
-        game_id = request.form.get("id")
+        game_id = request.form.get("id", type=int)
         move = request.form.get("move")
         game_data = games.get_game_data_if_to_move(game_id, user.get_logged_in_id())
 
