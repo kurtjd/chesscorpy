@@ -36,7 +36,7 @@ function moveIsLegal(from, to)
 {
     var legal_moves = game.moves({ square: from, verbose: true })
 
-    for (var i = 0; i < legal_moves.length; i++)
+    for (let i = 0; i < legal_moves.length; i++)
     {
         if (legal_moves[i].to == to)
         {
@@ -64,9 +64,9 @@ function getCapturedPieces(color)
         'q': 0
     }
 
-    for (var i = 0; i < history.length; i++)
+    for (let i = 0; i < history.length; i++)
     {
-        var move = history[i]
+        let move = history[i]
 
         if (move.hasOwnProperty("captured") && move.color != color[0])
         {
@@ -175,7 +175,7 @@ function onMouseoverSquare(square, piece)
 
     highlightSquare(square)
 
-    for (var i = 0; i < moves.length; i++)
+    for (let i = 0; i < moves.length; i++)
     {
         highlightSquare(moves[i].to)
     }
