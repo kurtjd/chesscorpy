@@ -1,11 +1,12 @@
 body
 {
-    background-color: gray;
+    background-color: #222222;
+    color: #CCCCCC;
 }
 
 a
 {
-    color: black;
+    color: #AAAAAA;
 }
 a:hover
 {

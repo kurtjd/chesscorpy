@@ -234,8 +234,8 @@ if (USER_COLOR === "white" || USER_COLOR === "none") {
 }
 
 if (board.orientation() === "white") {
-    $("#player1").html("<b>" + PLAYER_BLACK + "</b>")
-    $("#player2").html("<b>" + PLAYER_WHITE + "</b>")
+    $("#player1").html("<h3><b>" + PLAYER_BLACK + "</b></h3>")
+    $("#player2").html("<h3><b>" + PLAYER_WHITE + "</b></h3>")
 } else {
     $("#player1").html("<b>" + PLAYER_WHITE + "</b>")
     $("#player2").html("<b>" + PLAYER_BLACK + "</b>")
