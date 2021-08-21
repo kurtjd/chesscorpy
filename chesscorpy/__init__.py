@@ -82,6 +82,20 @@ def logout():
     return redirect("/")
 
 
+@app.route("/profile")
+@helpers.login_required
+def profile():
+    """ Displays the profile of a user. """
+
+    user_id = request.args.get("id", type=int)
+    user_data = user.get_data_by_id(user_id)
+
+    if not user_data:
+        return helpers.error("That user does not exist.", 400)
+
+    return render_template("profile.html", user_data=user_data)
+
+
 @app.route("/opengames")
 @helpers.login_required
 def opengames():
@@ -113,7 +127,8 @@ def newgame():
 
         return redirect("/opengames")
     else:
-        return render_template("newgame.html")
+        username = request.args.get("username") if request.args.get("username") else "Public"
+        return render_template("newgame.html", username=username)
 
 
 @app.route("/start")

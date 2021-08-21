@@ -6,7 +6,7 @@
 
 {% block main %}
 <form action="/newgame" method="post">
-    User (keep "Public" if open to public): <input type="text" name="username" value="Public"><br>
+    User: <input type="text" name="username" value="{{ username }}"><br>
     Color:
     <select name="color">
         <option value="random">Random</option>
@@ -15,8 +15,15 @@
     </select>
     <br>
     Turn Limit (days): <input type="text" name="turnlimit" value="1"><br>
-    Minimum Rating: <input type="text" name="minrating" value="1"><br>
-    Maximum Rating: <input type="text" name="maxrating" value="3000"><br>
+
+    {% if username != "Public" %}
+        <input type="hidden" name="minrating" value="1">
+        <input type="hidden" name="maxrating" value="3000">
+    {% else %}
+        Minimum Rating: <input type="text" name="minrating" value="1"><br>
+        Maximum Rating: <input type="text" name="maxrating" value="3000"><br>
+    {% endif %}
+
     Publically Viewable: <input type="checkbox" name="public" checked><br>
     <input type="submit" value="Create Game">
 </form>

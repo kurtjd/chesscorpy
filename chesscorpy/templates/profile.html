@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ user_data.username }}'s Profile
+{% endblock %}
+
+{% block main %}
+    <h1><b>{{ user_data.username }}</b></h1>
+
+    <b>Rating</b>: {{ user_data.rating }}<br>
+    <b>Member Since</b>: {{ user_data.timestamp }}<br><br>
+
+    <a href="/activegames?id={{ user_data.id }}">View Active Games</a> |
+    <a href="/history?id={{ user_data.id }}">View Game History</a> |
+    <a href="newgame?username={{ user_data.username }}">Challenge</a>
+{% endblock %}
