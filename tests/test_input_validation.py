@@ -4,19 +4,19 @@ from chesscorpy.input_validation import Username, Password, Email, Rating, GameC
 
 def test_username_check_valid():
     assert Username.check_valid('') is Username.NONE
-    assert Username.check_valid("Very Long Username This Is") is Username.TOO_LONG
-    assert Username.check_valid("JohnDoe") is Username.VALID
+    assert Username.check_valid('Very Long Username This Is') is Username.TOO_LONG
+    assert Username.check_valid('JohnDoe') is Username.VALID
     assert Username.check_valid('A' * user.USERNAME_MAX_LEN) is Username.VALID
 
 
 def test_password_check_valid():
     assert Password.check_valid('') is Password.NONE
-    assert Password.check_valid("MyTopSecretPassword") is Password.VALID
+    assert Password.check_valid('MyTopSecretPassword') is Password.VALID
 
 
 def test_email_check_valid():
     assert Email.check_valid('') is Email.NONE
-    assert Email.check_valid("johndoe@gmail.com") is Email.VALID
+    assert Email.check_valid('johndoe@gmail.com') is Email.VALID
 
 
 def test_rating_check_valid():
@@ -31,10 +31,10 @@ def test_rating_check_valid():
 
 def test_gamecolor_check_valid():
     assert GameColor.check_valid('') is GameColor.NONE
-    assert GameColor.check_valid("red") is GameColor.BAD_COLOR
-    assert GameColor.check_valid("white") is GameColor.VALID
-    assert GameColor.check_valid("black") is GameColor.VALID
-    assert GameColor.check_valid("random") is GameColor.VALID
+    assert GameColor.check_valid('red') is GameColor.BAD_COLOR
+    assert GameColor.check_valid('white') is GameColor.VALID
+    assert GameColor.check_valid('black') is GameColor.VALID
+    assert GameColor.check_valid('random') is GameColor.VALID
 
 
 def test_turnlimit_check_valid():

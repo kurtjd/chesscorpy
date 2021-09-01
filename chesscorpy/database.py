@@ -1,7 +1,7 @@
 from sqlite3 import connect, Row
 
 
-DATABASE_FILE = "chesscorpy.db"
+DATABASE_FILE = 'chesscorpy.db'
 
 
 def sql_exec(db, query, query_args, get_all=True, get_last_row=False):

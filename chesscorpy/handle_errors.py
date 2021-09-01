@@ -7,14 +7,14 @@ def for_register(username, password, email, rating):
 
     # TODO: More error checking (ie valid email, email length, etc)
     error_msgs = {
-        input_validation.Username.NONE: "Please provide a username.",
-        input_validation.Username.PUBLIC: "'Public' may not be used as a username.",
-        input_validation.Username.TOO_LONG: f"Username cannot be greater than {user.USERNAME_MAX_LEN} "
-                                            "characters.",
-        input_validation.Password.NONE: "Please provide a password.",
-        input_validation.Email.NONE: "Please provide an email address.",
-        input_validation.Rating.OUT_OF_BOUNDS: f"Rating must be a number between {user.MIN_RATING} and "
-                                               f"{user.MAX_RATING}"
+        input_validation.Username.NONE: 'Please provide a username.',
+        input_validation.Username.PUBLIC: '"Public" may not be used as a username.',
+        input_validation.Username.TOO_LONG: f'Username cannot be greater than {user.USERNAME_MAX_LEN} '
+                                            'characters.',
+        input_validation.Password.NONE: 'Please provide a password.',
+        input_validation.Email.NONE: 'Please provide an email address.',
+        input_validation.Rating.OUT_OF_BOUNDS: f'Rating must be a number between {user.MIN_RATING} and '
+                                               f'{user.MAX_RATING}'
     }
 
     username_check = input_validation.Username.check_valid(username)
@@ -35,16 +35,16 @@ def for_register(username, password, email, rating):
     if error_msg is not None:
         return helpers.error(error_msg, 400)
 
-    if user.get_data_by_name(username, ["username"]):
-        return helpers.error("Username already exists", 400)
+    if user.get_data_by_name(username, ['username']):
+        return helpers.error('Username already exists', 400)
 
 
 def for_login_input(username, password):
     """ Handles errors for the input of the login route. """
 
     error_msgs = {
-        input_validation.Username.NONE: "Please provide a username.",
-        input_validation.Password.NONE: "Please provide a password."
+        input_validation.Username.NONE: 'Please provide a username.',
+        input_validation.Password.NONE: 'Please provide a password.'
     }
 
     username_check = input_validation.Username.check_valid(username)
@@ -64,32 +64,32 @@ def for_login_sql(user_, password):
     """ Handles errors for the SQL of the login route. """
 
     if not user_:
-        return helpers.error("User does not exist.", 400)
+        return helpers.error('User does not exist.', 400)
 
     # Make sure username and password combination is valid.
-    if not check_password_hash(user_["password"], password):
-        return helpers.error("Username and password combination is invalid.", 400)
+    if not check_password_hash(user_['password'], password):
+        return helpers.error('Username and password combination is invalid.', 400)
 
 
 def for_newgame_input(username, color, turnlimit, minrating, maxrating):
     """ Handles errors for the newgame route. """
 
     error_msgs = {
-        input_validation.Username.NONE: "Please enter the name of the user you wish to challenge.",
-        input_validation.GameColor.NONE: "Please select the color you wish to play.",
-        input_validation.GameColor.BAD_COLOR: "Please enter a valid color.",
-        input_validation.TurnLimit.NONE: "Please enter a turn limit in days.",
-        input_validation.TurnLimit.OUT_OF_BOUNDS: "Please enter a turn limit greater than 0.",
-        input_validation.GameRatings.MIN_NONE: "Please enter the minimum rating you wish for "
-                                               "people to see your challenge.",
-        input_validation.GameRatings.MIN_OUT_OF_BOUNDS: "Please enter a minimum rating between "
-                                                        f"{user.MIN_RATING} and {user.MAX_RATING}.",
-        input_validation.GameRatings.MIN_TOO_HIGH: "Please enter a minimum rating that is "
-                                                   "less than or equal to the maximum rating.",
-        input_validation.GameRatings.MAX_NONE: "Please enter the maximum rating you wish for "
-                                               "people to see your challenge.",
-        input_validation.GameRatings.MAX_OUT_OF_BOUNDS: "Please enter a maximum rating between "
-                                                        f"{user.MIN_RATING} and {user.MAX_RATING}.",
+        input_validation.Username.NONE: 'Please enter the name of the user you wish to challenge.',
+        input_validation.GameColor.NONE: 'Please select the color you wish to play.',
+        input_validation.GameColor.BAD_COLOR: 'Please enter a valid color.',
+        input_validation.TurnLimit.NONE: 'Please enter a turn limit in days.',
+        input_validation.TurnLimit.OUT_OF_BOUNDS: 'Please enter a turn limit greater than 0.',
+        input_validation.GameRatings.MIN_NONE: 'Please enter the minimum rating you wish for '
+                                               'people to see your challenge.',
+        input_validation.GameRatings.MIN_OUT_OF_BOUNDS: 'Please enter a minimum rating between '
+                                                        f'{user.MIN_RATING} and {user.MAX_RATING}.',
+        input_validation.GameRatings.MIN_TOO_HIGH: 'Please enter a minimum rating that is '
+                                                   'less than or equal to the maximum rating.',
+        input_validation.GameRatings.MAX_NONE: 'Please enter the maximum rating you wish for '
+                                               'people to see your challenge.',
+        input_validation.GameRatings.MAX_OUT_OF_BOUNDS: 'Please enter a maximum rating between '
+                                                        f'{user.MIN_RATING} and {user.MAX_RATING}.',
     }
 
     username_check = input_validation.Username.check_valid(username)
@@ -113,6 +113,6 @@ def for_newgame_input(username, color, turnlimit, minrating, maxrating):
 
 def for_newgame_opponent(opponent):
     if not opponent:
-        return helpers.error("Please enter a valid user to challenge.", 400)
-    elif opponent["id"] == user.get_logged_in_id():
-        return helpers.error("You cannot challenge yourself.", 400)
+        return helpers.error('Please enter a valid user to challenge.', 400)
+    elif opponent['id'] == user.get_logged_in_id():
+        return helpers.error('You cannot challenge yourself.', 400)

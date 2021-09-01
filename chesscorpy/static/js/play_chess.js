@@ -1,30 +1,30 @@
 function getUserId() {
-    if (USER_COLOR === "white") {
+    if (USER_COLOR === 'white') {
         return PLAYER_WHITE_ID
-    } else if (USER_COLOR === "black") {
+    } else if (USER_COLOR === 'black') {
         return PLAYER_BLACK_ID
     } else {
-        return "none"
+        return 'none'
     }
 }
 
 function setChatDisplay(chats) {
-    $("#chat").html('')
+    $('#chat').html('')
     for (const msg of chats) {
-        $("#chat").append("<b>" + msg["user_name"] + "</b>: " + msg["contents"] + "<br>")
+        $('#chat').append('<b>' + msg['user_name'] + '</b>: ' + msg['contents'] + '<br>')
     }
 }
 
 function getChat() {
-    $.get("/chat",
+    $.get('/chat',
         {
             id: GAME_ID
         },
         function (data, success) {
-            if (data && success === "success") {
+            if (data && success === 'success') {
                 setChatDisplay(data)
             } else {
-                alert("Unable to load chat messages!")
+                alert('Unable to load chat messages!')
             }
         }
     )
@@ -33,35 +33,35 @@ function getChat() {
 function postChat() {
     const user_id = getUserId()
 
-    if (user_id === "none") {
+    if (user_id === 'none') {
         return false
     }
 
-    $.post("/chat",
+    $.post('/chat',
         {
             game_id: GAME_ID,
             user_id: user_id,
-            msg: $("#msg").val()
+            msg: $('#msg').val()
         },
         function (data, success) {
-            if (data.successful && success === "success") {
+            if (data.successful && success === 'success') {
                 getChat()
-                $("#msg").val('')
+                $('#msg').val('')
             } else {
-                alert("Unable to send chat message!")
+                alert('Unable to send chat message!')
             }
         }
     )
 }
 
 function postMove(move_san) {
-    $.post("/move", {
+    $.post('/move', {
             id: GAME_ID,
             move: move_san
         },
         function (data, status) {
-            if (!data.successful || status !== "success") {
-                alert("Unable to perform move.")
+            if (!data.successful || status !== 'success') {
+                alert('Unable to perform move.')
                 game.undo()
                 board.position(game.fen())
             }
@@ -70,9 +70,9 @@ function postMove(move_san) {
 }
 
 function promptPromotion() {
-    const promote_to = prompt("Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ", 'q')
+    const promote_to = prompt('Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ', 'q')
 
-    if ("qrbn".includes(promote_to)) {
+    if ('qrbn'.includes(promote_to)) {
         return promote_to
     } else {
         return 'q'
@@ -95,15 +95,15 @@ function moveIsPromotion(from, to) {
 }
 
 function setCapturedDisplay() {
-    $("#captured").html("Captured White: " + JSON.stringify(captured_white) +
-                        "<br>Captured Black: " + JSON.stringify(captured_black))
+    $('#captured').html('Captured White: ' + JSON.stringify(captured_white) +
+                        '<br>Captured Black: ' + JSON.stringify(captured_black))
 }
 
 function getCapturedPieces(color) {
     const captured = {'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0}
 
     for (const move of game.history({ verbose: true })) {
-        if (move.hasOwnProperty("captured") && move.color !== color[0]) {
+        if (move.hasOwnProperty('captured') && move.color !== color[0]) {
             captured[move.captured]++
         }
     }
@@ -117,29 +117,29 @@ function endGame(msg) {
 
 function checkGame() {
     if (game.in_checkmate()) {
-        endGame("Game over. Checkmate!")
+        endGame('Game over. Checkmate!')
     } else if (game.in_draw()) {
-        endGame("Game over. Draw!")
+        endGame('Game over. Draw!')
     } else if (game.in_stalemate()) {
-        endGame("Game over. Stalemate!")
+        endGame('Game over. Stalemate!')
     } else if (game.in_threefold_repetition()) {
-        endGame("Game over. Draw by three-fold repetition!")
+        endGame('Game over. Draw by three-fold repetition!')
     }
 }
 
 function unHighlightSquares() {
-    $('#' + BOARD_NAME + " .square-55d63").css("background", '')
+    $('#' + BOARD_NAME + ' .square-55d63').css('background', '')
 }
 
 function highlightSquare(square) {
-    const $square = $('#' + BOARD_NAME + " .square-" + square)
-    let background = "#a9a9a9"
+    const $square = $('#' + BOARD_NAME + ' .square-' + square)
+    let background = '#a9a9a9'
 
-    if ($square.hasClass("black-3c85d")) {
-        background = "#696969"
+    if ($square.hasClass('black-3c85d')) {
+        background = '#696969'
     }
 
-    $square.css("background", background)
+    $square.css('background', background)
 }
 
 function onPieceDrag(source, piece, position, orientation) {
@@ -166,12 +166,12 @@ function onPieceMove(source, target) {
     })
 
     if (move === null) {
-        return "snapback"
+        return 'snapback'
     }
 
     // For now naively re-check for captured pieces even if move didn't result in capture.
-    captured_white = getCapturedPieces("white")
-    captured_black = getCapturedPieces("black")
+    captured_white = getCapturedPieces('white')
+    captured_black = getCapturedPieces('black')
     setCapturedDisplay()
 
     checkGame()
@@ -205,7 +205,7 @@ function onSnapEnd() {
 
 
 const board_config = {
-    position: "start",
+    position: 'start',
     draggable: true,
     onDragStart: onPieceDrag,
     onDrop: onPieceMove,
@@ -214,31 +214,31 @@ const board_config = {
     onSnapEnd: onSnapEnd
 }
 
-const BOARD_NAME = "board"
+const BOARD_NAME = 'board'
 const game = new Chess()
 const board = Chessboard(BOARD_NAME, board_config)
 
-if (PGN != "None") {
+if (PGN != 'None') {
     game.load_pgn(PGN)
     board.position(game.fen(), false)
 }
 
-let captured_white = getCapturedPieces("white")
-let captured_black = getCapturedPieces("black")
+let captured_white = getCapturedPieces('white')
+let captured_black = getCapturedPieces('black')
 setCapturedDisplay()
 
-if (USER_COLOR === "white" || USER_COLOR === "none") {
-    board.orientation("white")
+if (USER_COLOR === 'white' || USER_COLOR === 'none') {
+    board.orientation('white')
 } else {
-    board.orientation("black")
+    board.orientation('black')
 }
 
-if (board.orientation() === "white") {
-    $("#player1").html("<h3><b>" + PLAYER_BLACK + "</b></h3>")
-    $("#player2").html("<h3><b>" + PLAYER_WHITE + "</b></h3>")
+if (board.orientation() === 'white') {
+    $('#player1').html('<h3><b>' + PLAYER_BLACK + '</b></h3>')
+    $('#player2').html('<h3><b>' + PLAYER_WHITE + '</b></h3>')
 } else {
-    $("#player1").html("<b>" + PLAYER_WHITE + "</b>")
-    $("#player2").html("<b>" + PLAYER_BLACK + "</b>")
+    $('#player1').html('<b>' + PLAYER_WHITE + '</b>')
+    $('#player2').html('<b>' + PLAYER_BLACK + '</b>')
 }
 
 getChat()

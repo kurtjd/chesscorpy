@@ -14,7 +14,7 @@ class Username(Enum):
             return cls.NONE
         elif len(username) > user.USERNAME_MAX_LEN:
             return cls.TOO_LONG
-        elif username.lower() == "public":
+        elif username.lower() == 'public':
             return cls.PUBLIC
         else:
             return cls.VALID
@@ -68,7 +68,7 @@ class GameColor(Enum):
     def check_valid(cls, color):
         if not color:
             return cls.NONE
-        elif color not in ("random", "white", "black"):
+        elif color not in ('random', 'white', 'black'):
             return cls.BAD_COLOR
         else:
             return cls.VALID
