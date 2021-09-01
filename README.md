@@ -35,7 +35,8 @@ flask run
 
 Configure
 =========
-In app.py, modify email configuration if you wish to have emails sent out to players.
+* In app.py, modify email configuration if you wish to have emails sent out to players.
+* Modify database.py if you wish to use a database platform other than SQLite.
 
 Acknowledgements
 ================
