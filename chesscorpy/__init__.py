@@ -22,15 +22,16 @@ mail = flask_mail.Mail(app)
 flask_session.Session(app)
 
 
-def check_games_wrap():
+def handle_timeouts_wrap():
     """Allow for the call of mail in check_games under app context."""
 
     with app.app_context():
-        helpers.check_games(mail)
+        games.handle_timeouts(mail)
 
 
+# Set up the job that checks for timed out games.
 game_check_job = BackgroundScheduler()
-game_check_job.add_job(check_games_wrap, 'interval', seconds=30)
+game_check_job.add_job(handle_timeouts_wrap, 'interval', seconds=30)
 game_check_job.start()
 
 

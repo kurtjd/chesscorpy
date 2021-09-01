@@ -1,3 +1,5 @@
+import datetime
+
 from . import database, user, helpers, handle_errors
 
 
@@ -207,3 +209,36 @@ def get_games():
              f'OR status == "{Status.IN_PROGRESS}"')
 
     return database.sql_exec(database.DATABASE_FILE, query)
+
+
+def handle_timeouts(mail):
+    """Checks to see if a player has ran out of time in each game."""
+
+    all_games = get_games()
+
+    for game in all_games:
+        # Check if any player has timed out.
+        if helpers.get_turn_time_left(
+                game['move_start_time'],
+                game['turn_day_limit']) < datetime.timedelta():
+            if game['to_move'] == game['player_white_id']:
+                winner = game['player_black_id']
+            else:
+                winner = game['player_white_id']
+
+            # If so, update game status.
+            query = (f'UPDATE games SET status = "{Status.TIMEOUT}", '
+                     f'winner = {winner} WHERE id = {game["id"]}')
+            database.sql_exec(database.DATABASE_FILE, query)
+
+            # Then email the loser.
+            loser_data = user.get_data_by_id(game['to_move'],
+                                             ['id', 'username', 'email'])
+            msg = (
+                f'Hi {loser_data["username"]},\n\n'
+                'Unfortunately you have lost a game due to timeout.\n\n'
+                'From,\n'
+                'ChessCorPyBot'
+            )
+            helpers.send_mail(mail, loser_data['email'], 'Game Update', msg,
+                              loser_data['id'])
