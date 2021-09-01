@@ -5,6 +5,8 @@ from . import database
 
 
 USERNAME_MAX_LEN = 15
+EMAIL_MAX_LEN = 320
+PASSWORD_MAX_LEN = 100
 DEFAULT_RATING = 1000
 MIN_RATING = 1
 MAX_RATING = 3000
@@ -94,6 +96,10 @@ def delete_session():
 
 def set_rating(rating):
     """Sets the user's starting rating."""
+
+    if not rating:
+        rating = DEFAULT_RATING
+        return rating
 
     try:
         rating = int(rating)

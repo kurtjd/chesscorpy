@@ -6,7 +6,6 @@ from . import input_validation, helpers, user
 def for_register(username, password, email, rating):
     """Handles errors for the register route."""
 
-    # TODO: More error checking (ie valid email, email length, etc)
     error_msgs = {
         input_validation.Username.NONE: 'Please provide a username.',
         input_validation.Username.PUBLIC: ('"Public" may not '
@@ -15,7 +14,13 @@ def for_register(username, password, email, rating):
                                              f'than {user.USERNAME_MAX_LEN} '
                                              'characters.'),
         input_validation.Password.NONE: 'Please provide a password.',
+        input_validation.Password.TOO_LONG: (
+            f'Password must be no greater than {user.PASSWORD_MAX_LEN} '
+            'characters.'),
         input_validation.Email.NONE: 'Please provide an email address.',
+        input_validation.Email.TOO_LONG: (
+            f'Email must be no greater than {user.EMAIL_MAX_LEN} '
+            'characters.'),
         input_validation.Rating.OUT_OF_BOUNDS: ('Rating must be a number '
                                                 f'between {user.MIN_RATING} '
                                                 f'and {user.MAX_RATING}')

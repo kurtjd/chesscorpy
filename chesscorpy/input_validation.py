@@ -28,11 +28,14 @@ class Password(Enum):
 
     VALID = auto()
     NONE = auto()
+    TOO_LONG = auto()
 
     @classmethod
     def check_valid(cls, password):
         if not password:
             return cls.NONE
+        elif len(password) > user.PASSWORD_MAX_LEN:
+            return cls.TOO_LONG
         else:
             return cls.VALID
 
@@ -42,11 +45,14 @@ class Email(Enum):
 
     VALID = auto()
     NONE = auto()
+    TOO_LONG = auto()
 
     @classmethod
     def check_valid(cls, email):
         if not email:
             return cls.NONE
+        elif len(email) > user.EMAIL_MAX_LEN:
+            return cls.TOO_LONG
         else:
             return cls.VALID
 
