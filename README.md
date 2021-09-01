@@ -6,6 +6,7 @@ Requirements
 ============
 * Python 3+
 * Flask
+* Flask-Session
 * chess
 * pytest (for unit testing)
 
