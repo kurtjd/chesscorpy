@@ -39,6 +39,13 @@ Configure
 * In app.py, modify email configuration if you wish to have emails sent out to players.
 * Modify database.py if you wish to use a database platform other than SQLite.
 
+Testing
+=======
+Unit tests are kept in the /tests folder and can be run with pytest.
+
+This was my first time implementing tests so I never got around to implementing
+any that require mock data but I will work on that next time.
+
 Acknowledgements
 ================
 * Chris Oakman (chessboard.js)
