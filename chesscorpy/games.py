@@ -103,9 +103,8 @@ def get_active_games(user_id):
     query = ('SELECT * FROM games WHERE (player_white_id = ? OR '
              f'player_black_id = ?) AND (status = "{Status.NO_MOVE}" OR '
              f'status = "{Status.IN_PROGRESS}") AND '
-             f'(public = 1 OR player_white_id = {user.get_logged_in_id()} OR '
-             f'player_black_id = {user.get_logged_in_id()})')
-    query_args = [user_id] * 2
+             '(public = 1 OR player_white_id = ? OR player_black_id = ?)')
+    query_args = ([user_id] * 2) + ([user.get_logged_in_id()] * 2)
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args)
 
