@@ -7,9 +7,7 @@ import chess.pgn
 from . import user, database, games
 
 
-def update_game_db(game_data):
-    """Updates a given game in the database."""
-
+def _update_game_db(game_data):
     query = ('UPDATE games SET to_move = ?, move_start_time = ?, status = ?, '
              'winner = ?, pgn = ? WHERE id = ?')
     query_args = [game_data['to_move'], game_data['move_start_time'],
@@ -19,24 +17,14 @@ def update_game_db(game_data):
     database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
-def update_player_to_move(game_data):
-    """Set the ID of the next player to move."""
-
+def _update_player_to_move(game_data):
     if game_data['player_white_id'] == game_data['to_move']:
         game_data['to_move'] = game_data['player_black_id']
     else:
         game_data['to_move'] = game_data['player_white_id']
 
 
-def get_game_status(game):
-    """Gets the current status of a game."""
-
-    return game.outcome(claim_draw=True)
-
-
-def update_game_status(game_status, game_data):
-    """Updates the status and result of the game."""
-
+def _update_game_status(game_status, game_data):
     if game_status:
         status_options = {
             game_status.termination.CHECKMATE: games.Status.CHECKMATE,
@@ -63,30 +51,19 @@ def update_game_status(game_status, game_data):
         game_data['status'] = games.Status.IN_PROGRESS
 
 
-def update_game_data(game_data, game_pgn, game_status):
-    """Updates the local copy of game data."""
-
+def _update_game_data(game_data, game_pgn, game_status):
     game_data['pgn'] = game_pgn
     game_data['move_start_time'] = (
         datetime.datetime.now().replace(microsecond=0))
-    update_player_to_move(game_data)
-    update_game_status(game_status, game_data)
+    _update_player_to_move(game_data)
+    _update_game_status(game_status, game_data)
 
 
-def attempt_move(move_san, game):
-    """Attempts to make a move if valid."""
-
-    move = game.parse_san(move_san)
-    if move in game.legal_moves:
-        game.push(move)
-        return True
-    else:
-        return False
+def _get_game_status(game):
+    return game.outcome(claim_draw=True)
 
 
-def regen_pgn_headers(game, game_data):
-    """Regenerates the PGN headers for the game."""
-
+def _regen_pgn_headers(game, game_data):
     game.headers['Event'] = 'Correspondence Chess'
     game.headers['Site'] = 'ChessCorPy'
     game.headers['Date'] = datetime.datetime.strptime(
@@ -98,12 +75,19 @@ def regen_pgn_headers(game, game_data):
                                                 ['username'])['username']
 
 
-def board_load_pgn(board, pgn):
-    """Loads pgn into a board."""
-
+def _board_load_pgn(board, pgn):
     game = chess.pgn.read_game(io.StringIO(pgn))
     for move in game.mainline_moves():
         board.push(move)
+
+
+def _attempt_move(move_san, game):
+    move = game.parse_san(move_san)
+    if move in game.legal_moves:
+        game.push(move)
+        return True
+    else:
+        return False
 
 
 def process_move(move_san, game_data):
@@ -112,19 +96,19 @@ def process_move(move_san, game_data):
     board = chess.Board()
 
     if game_data['pgn']:
-        board_load_pgn(board, game_data['pgn'])
+        _board_load_pgn(board, game_data['pgn'])
 
-    if not attempt_move(move_san, board):
+    if not _attempt_move(move_san, board):
         return False
 
     game = chess.pgn.Game.from_board(board)
 
     # Since PGN data is generated from the board,
     # previous headers are lost so re-generate them.
-    regen_pgn_headers(game, game_data)
+    _regen_pgn_headers(game, game_data)
 
-    update_game_data(game_data, str(game).replace('\n', '\\n'),
-                     get_game_status(board))
-    update_game_db(game_data)
+    _update_game_data(game_data, str(game).replace('\n', '\\n'),
+                      _get_game_status(board))
+    _update_game_db(game_data)
 
     return True
