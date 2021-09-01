@@ -43,8 +43,7 @@ def _update_game_status(game_status, game_data):
             win_color = None
 
         if win_color:
-            game_data['winner'] = user.get_data_by_id(
-                game_data[f'player_{win_color}_id'], ['id'])['id']
+            game_data['winner'] = game_data[f'player_{win_color}_id']
         else:
             game_data['winner'] = user.DRAW_USER_ID
     else:

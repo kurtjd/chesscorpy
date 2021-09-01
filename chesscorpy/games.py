@@ -5,6 +5,7 @@ class Status:
     NO_MOVE = 'no_move'
     IN_PROGRESS = 'in_progress'
     CHECKMATE = 'checkmate'
+    TIMEOUT = 'timeout'
     STALEMATE = 'stalemate'
     DRAW = 'draw'
 
@@ -197,3 +198,12 @@ def get_opponent_id(username):
         return opponent['id']
     else:
         return user.PUBLIC_USER_ID
+
+
+def get_games():
+    """Retrieves all active games."""
+
+    query = (f'SELECT * FROM games WHERE status == "{Status.NO_MOVE}" '
+             f'OR status == "{Status.IN_PROGRESS}"')
+
+    return database.sql_exec(database.DATABASE_FILE, query)

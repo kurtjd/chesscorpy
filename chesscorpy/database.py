@@ -4,7 +4,7 @@ from sqlite3 import connect, Row
 DATABASE_FILE = 'chesscorpy.db'
 
 
-def sql_exec(db, query, query_args, get_all=True, get_last_row=False):
+def sql_exec(db, query, query_args=(), get_all=True, get_last_row=False):
     """Performs queries on a database."""
 
     db = connect(db)

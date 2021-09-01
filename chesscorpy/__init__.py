@@ -1,9 +1,14 @@
 import flask_session
 from flask import Flask, render_template, redirect, request, jsonify, escape
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from . import helpers, database, input_validation, handle_errors, user, games
 from . import handle_move, chat
 
+
+game_check_job = BackgroundScheduler()
+game_check_job.add_job(helpers.check_games, 'interval', seconds=30)
+game_check_job.start()
 
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'

@@ -4,7 +4,7 @@ from functools import wraps
 
 from flask import redirect, render_template
 
-from . import user
+from . import user, games, database
 
 
 def error(msg, code):
@@ -60,3 +60,29 @@ def get_turn_time_left(turn_start, turnlimit):
     return (datetime.datetime.strptime(turn_start, '%Y-%m-%d %H:%M:%S')
             + (datetime.timedelta(days=turnlimit))
             - datetime.datetime.now().replace(microsecond=0))
+
+
+def mail_loser_timeout(user_id):
+    """Mails a user when they lose a game due to timeout."""
+
+    print(f'Mailing {user_id} that they lost.')
+
+
+def check_games():
+    """Checks to see if a player has ran out of time in each game."""
+
+    all_games = games.get_games()
+
+    for game in all_games:
+        if get_turn_time_left(game['move_start_time'],
+                              game['turn_day_limit']) < datetime.timedelta():
+            if game['to_move'] == game['player_white_id']:
+                winner = game['player_black_id']
+            else:
+                winner = game['player_white_id']
+
+            query = (f'UPDATE games SET status = "{games.Status.TIMEOUT}", '
+                     f'winner = {winner} WHERE id = {game["id"]}')
+            database.sql_exec(database.DATABASE_FILE, query)
+
+            mail_loser_timeout(game['to_move'])
