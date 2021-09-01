@@ -254,6 +254,22 @@ def history():
                            username=username)
 
 
+@app.route('/settings', methods=['GET', 'POST'])
+@helpers.login_required
+def settings():
+    """Allows user to change settings."""
+
+    if request.method == 'POST':
+        notify = 0 if not request.form.get('notifications') else 1
+
+        user.update_settings(user.get_logged_in_id(), notify)
+        return redirect('/')
+    else:
+        notify = int(user.get_data_by_id(user.get_logged_in_id(),
+                                         ['notifications'])['notifications'])
+        return render_template('settings.html', notify=notify)
+
+
 @app.route('/move', methods=['GET', 'POST'])
 @helpers.login_required
 def move_request():

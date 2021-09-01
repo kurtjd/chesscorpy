@@ -54,6 +54,15 @@ def create(username, password, email, rating, notifications):
     database.sql_exec(database.DATABASE_FILE, query, query_args, False)
 
 
+def update_settings(user_id, notify):
+    """Updates a user's settings."""
+
+    query = 'UPDATE users SET notifications = ? WHERE id = ?'
+    query_args = [notify, user_id]
+
+    database.sql_exec(database.DATABASE_FILE, query, query_args, False)
+
+
 def auto_login(username):
     """Automatically logs in a user given a username."""
 

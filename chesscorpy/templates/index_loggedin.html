@@ -8,9 +8,10 @@
     <h3><b>Welcome {{ user_data.username }}!</b></h3>
     <img src="/static/img/chessboard.png">
     <br><br>
-    <a href="/mygames">View My Active Games</a> |
+    <a href="/activegames">View My Active Games</a> |
     <a href="/newgame">Create Game Request</a> |
     <a href="/opengames?direct=true">View Direct Game Requests</a> |
     <a href="/history?id={{ user_data.id }}">View Game History</a> |
+    <a href="/settings">Settings</a> |
     <a href="/logout">Logout</a>
 {% endblock %}

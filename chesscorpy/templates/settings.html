@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+<form action="/settings" method="post">
+    Receive email notifications: <input type="checkbox" name="notifications"{% if notify == 1 %} checked{% endif %}><br>
+    <input type="submit" value="Update">
+</form>
+{% endblock %}
