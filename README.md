@@ -10,7 +10,8 @@ Thus, I spent very little time on the front-end and it's pretty ugly.
 Although this does not have near the number of features of professional chess apps, it has all the basics such as:
 
 * Account creation system
-* Creating and viewing game challenges
+* Creating and viewing public and private challenge requests
+* Chat system
 * Automatic email notifications when a move is played
 * Input validation, error handling, and basic security
 * And of course, a playable chess board!
