@@ -89,6 +89,37 @@ def _attempt_move(move_san, game):
         return False
 
 
+def _notify_player(mail, outcome, game_data, move_san):
+    if outcome:
+        msg_options = {
+            outcome.termination.CHECKMATE: (
+                'The game has been won by checkmate.'),
+            outcome.termination.STALEMATE: 'The game is a draw by stalemate.',
+            outcome.termination.INSUFFICIENT_MATERIAL: (
+                'The game is a draw by insufficient material.'),
+            outcome.termination.THREEFOLD_REPETITION: (
+                'The game is a draw by three-fold repetition.')
+        }
+
+        msg_body = msg_options[outcome.termination]
+    else:
+        msg_body = (f'You have {game_data["turn_day_limit"]} days '
+                    'to make a move.')
+
+    next_player = user.get_data_by_id(game_data['to_move'],
+                                      ['id', 'username', 'email'])
+    msg = (
+        f'Hi {next_player["username"]}!\n\n'
+        f'Your opponent has played the move {move_san}. '
+        f'{msg_body}\n\n'
+        'Your pal,\n'
+        'ChessCorPyBot'
+    )
+
+    helpers.send_mail(mail, next_player['email'], 'Game Update', msg,
+                      next_player['id'])
+
+
 def process_move(move_san, game_data, mail):
     """Processes a move request from a user."""
 
@@ -110,18 +141,6 @@ def process_move(move_san, game_data, mail):
                       _get_game_status(board))
     _update_game_db(game_data)
 
-    # Notify the next player to move that it's their turn.
-    next_player = user.get_data_by_id(game_data['to_move'],
-                                      ['id', 'username', 'email'])
-    msg = (
-        f'Hi {next_player["username"]}!\n\n'
-        f'Your opponent has played the move {move_san}. '
-        f'You have {game_data["turn_day_limit"]} days to make a move.\n\n'
-        'Your pal,\n'
-        'ChessCorPyBot'
-    )
-
-    helpers.send_mail(mail, next_player['email'], 'Game Update', msg,
-                      next_player['id'])
+    _notify_player(mail, _get_game_status(board), game_data, move_san)
 
     return True
