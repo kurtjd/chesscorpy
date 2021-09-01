@@ -1,4 +1,5 @@
 import flask_session
+import flask_mail
 from flask import Flask, render_template, redirect, request, jsonify, escape
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -6,13 +7,31 @@ from . import helpers, database, input_validation, handle_errors, user, games
 from . import handle_move, chat
 
 
-game_check_job = BackgroundScheduler()
-game_check_job.add_job(helpers.check_games, 'interval', seconds=30)
-game_check_job.start()
-
 app = Flask(__name__)
+
+# Change depending on your mail configuration.
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'chesscorpy@gmail.com'
+app.config['MAIL_PASSWORD'] = '*******'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
 app.config['SESSION_TYPE'] = 'filesystem'
+mail = flask_mail.Mail(app)
 flask_session.Session(app)
+
+
+def check_games_wrap():
+    """Allow for the call of mail in check_games under app context."""
+
+    with app.app_context():
+        helpers.check_games(mail)
+
+
+game_check_job = BackgroundScheduler()
+game_check_job.add_job(check_games_wrap, 'interval', seconds=30)
+game_check_job.start()
 
 
 @app.route('/')

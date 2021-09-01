@@ -2,9 +2,24 @@ import random
 import datetime
 from functools import wraps
 
+import flask_mail
 from flask import redirect, render_template
 
 from . import user, games, database
+
+
+def _mail_loser_timeout(user_id, mail):
+    user_data = user.get_data_by_id(user_id, ['username', 'email'])
+
+    msg = flask_mail.Message('Game Update', sender='chesscorpy@gmail.com',
+                             recipients=[user_data['email']])
+    msg.body = (
+        f'Hi {user_data["username"]},\n\n'
+        'Unfortunately you have lost a game due to timeout.\n\n'
+        'From,\n'
+        'ChessCorPyBot'
+    )
+    mail.send(msg)
 
 
 def error(msg, code):
@@ -62,13 +77,7 @@ def get_turn_time_left(turn_start, turnlimit):
             - datetime.datetime.now().replace(microsecond=0))
 
 
-def mail_loser_timeout(user_id):
-    """Mails a user when they lose a game due to timeout."""
-
-    print(f'Mailing {user_id} that they lost.')
-
-
-def check_games():
+def check_games(mail):
     """Checks to see if a player has ran out of time in each game."""
 
     all_games = games.get_games()
@@ -85,4 +94,4 @@ def check_games():
                      f'winner = {winner} WHERE id = {game["id"]}')
             database.sql_exec(database.DATABASE_FILE, query)
 
-            mail_loser_timeout(game['to_move'])
+            _mail_loser_timeout(game['to_move'], mail)
