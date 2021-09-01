@@ -113,9 +113,9 @@ def newgame():
     if request.method == "POST":
         username = request.form.get("username").lower()
         color = request.form.get("color")
-        turnlimit = None if not request.form.get("turnlimit").isdigit() else int(request.form.get("turnlimit"))
-        minrating = None if not request.form.get("minrating").isdigit() else int(request.form.get("minrating"))
-        maxrating = None if not request.form.get("maxrating").isdigit() else int(request.form.get("maxrating"))
+        turnlimit = request.form.get("turnlimit", type=int)
+        minrating = request.form.get("minrating", type=int)
+        maxrating = request.form.get("maxrating", type=int)
         is_public = 0 if not request.form.get("public") else 1
 
         errors = handle_errors.for_newgame_input(username, color, turnlimit, minrating, maxrating)

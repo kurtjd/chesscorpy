@@ -51,7 +51,7 @@ class Rating(Enum):
 
     @classmethod
     def check_valid(cls, rating):
-        if rating == '':
+        if not rating:
             return cls.NONE
         elif not (user.MIN_RATING <= rating <= user.MAX_RATING):
             return cls.OUT_OF_BOUNDS
@@ -81,7 +81,7 @@ class TurnLimit(Enum):
 
     @classmethod
     def check_valid(cls, limit):
-        if limit == '':
+        if not limit:
             return cls.NONE
         elif limit < 1:
             return cls.OUT_OF_BOUNDS
@@ -99,9 +99,9 @@ class GameRatings(Enum):
 
     @classmethod
     def check_valid(cls, min_, max_):
-        if min_ == '':
+        if not min_:
             return cls.MIN_NONE
-        elif max_ == '':
+        elif not max_:
             return cls.MAX_NONE
         elif not (user.MIN_RATING <= min_ <= user.MAX_RATING):
             return cls.MIN_OUT_OF_BOUNDS
