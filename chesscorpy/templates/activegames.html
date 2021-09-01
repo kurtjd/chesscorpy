@@ -5,11 +5,11 @@
 {% endblock %}
 
 {% block main %}
-    <h1>My Active Games</h1>
+    <h1>{{ username }}'s Active Games</h1>
     <table>
         <tr>
-            <td><b>My Color</b></td>
-            <td><b>Opponent</b></td>
+            <td><b>White</b></td>
+            <td><b>Black</b></td>
             <td><b>Player to Move</b></td>
             <td><b>Time to Move</b></td>
             <td><b>Turn Limit</b></td>
@@ -18,8 +18,8 @@
         </tr>
     {% for game in games %}
         <tr>
-            <td>{{ game.my_color }}</td>
-            <td><a href="/profile?id={{ game.opponent_id }}">{{ game.opponent_name }}</a></td>
+            <td><a href="/profile?id={{ game.white_id }}">{{ game.white_name }}</a></td>
+            <td><a href="/profile?id={{ game.black_id }}">{{ game.black_name }}</a></td>
             <td>{{ game.player_to_move }}</td>
             <td>{{ game.time_to_move }} hrs</td>
             <td>{{ game.turn_day_limit }} day(s)</td>
@@ -29,5 +29,7 @@
     {% endfor %}
     </table>
     <br>
-    <a href="/mygames">View All</a> | <a href="/mygames?my_move=true">View Only My Turn</a>
+    {% if my_games %}
+        <a href="/activegames">View All</a> | <a href="/activegames?my_move=true">View Only My Turn</a>
+    {% endif %}
 {% endblock %}

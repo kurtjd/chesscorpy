@@ -102,7 +102,9 @@ def get_active_games(user_id):
 
     query = ('SELECT * FROM games WHERE (player_white_id = ? OR '
              f'player_black_id = ?) AND (status = "{Status.NO_MOVE}" OR '
-             f'status = "{Status.IN_PROGRESS}")')
+             f'status = "{Status.IN_PROGRESS}") AND '
+             f'(public = 1 OR player_white_id = {user.get_logged_in_id()} OR '
+             f'player_black_id = {user.get_logged_in_id()})')
     query_args = [user_id] * 2
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args)
@@ -141,15 +143,16 @@ def format_active_games(games_data):
     # Add extra keys into games list for opponent info and user's color.
     games_data = database.rows_to_list(games_data)
     for game_ in games_data:
-        game_['my_color'], opponent_color = (
-            helpers.get_player_colors(game_['player_white_id'],
-                                      user.get_logged_in_id()))
+        white = user.get_data_by_id(game_['player_white_id'],
+                                    ['id', 'username'])
+        game_['white_name'] = white['username']
+        game_['white_id'] = white['id']
 
-        opponent = user.get_data_by_id(game_[f'player_{opponent_color}_id'],
-                                       ['id', 'username'])
+        black = user.get_data_by_id(game_['player_black_id'],
+                                    ['id', 'username'])
+        game_['black_name'] = black['username']
+        game_['black_id'] = black['id']
 
-        game_['opponent_name'] = opponent['username']
-        game_['opponent_id'] = opponent['id']
         game_['player_to_move'] = user.get_data_by_id(game_['to_move'],
                                                       ['username'])['username']
         game_['time_to_move'] = (

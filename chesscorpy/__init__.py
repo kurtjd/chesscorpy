@@ -206,20 +206,33 @@ def game():
     return render_template('game.html', game_data=game_data)
 
 
-@app.route('/mygames')
+@app.route('/activegames')
 @helpers.login_required
-def mygames():
-    """Displays the active games of the user."""
+def activegames():
+    """Displays the active games of a user."""
 
     my_move = request.args.get('my_move')
 
-    if my_move:
-        games_ = games.get_active_games_to_move(user.get_logged_in_id())
+    if request.args.get('id'):
+        user_id = request.args.get('id', type=int)
     else:
-        games_ = games.get_active_games(user.get_logged_in_id())
+        user_id = user.get_logged_in_id()
 
-    return render_template('mygames.html',
-                           games=games.format_active_games(games_))
+    if my_move and user_id == user.get_logged_in_id():
+        games_ = games.get_active_games_to_move(user_id)
+    else:
+        games_ = games.get_active_games(user_id)
+
+    username = user.get_data_by_id(user_id, ['username'])['username']
+
+    if user_id == user.get_logged_in_id():
+        my_games = True
+    else:
+        my_games = False
+
+    return render_template('activegames.html',
+                           games=games.format_active_games(games_),
+                           username=username, my_games=my_games)
 
 
 @app.route('/history')
