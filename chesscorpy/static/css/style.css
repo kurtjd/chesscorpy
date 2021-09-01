@@ -1,6 +1,6 @@
 body
 {
-    background-color: #222222;
+    background-color: #111111;
     color: #CCCCCC;
 }
 
@@ -17,4 +17,37 @@ table, th, td
 {
     border: 1px solid black;
     border-collapse: collapse;
+}
+
+input[type="text"]
+{
+    background-color: #555555;
+    color: #FFFFFF;
+}
+
+#game_container
+{
+    width: 65%;
+}
+
+#chat_container
+{
+    background-color: #222222;
+    width: 20%;
+    float: left;
+    padding: 100px 0;
+}
+
+#board_container
+{
+    width: 60%;
+    float: left;
+}
+
+#captured
+{
+    background-color: #222222;
+    width: 20%;
+    float: right;
+    padding: 80px 0;
 }

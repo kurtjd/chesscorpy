@@ -97,17 +97,37 @@ function moveIsPromotion(from, to) {
 }
 
 function setCapturedDisplay() {
-    $('#captured').html('Captured White: ' + JSON.stringify(captured_white) +
-                        '<br>Captured Black: '
-                        + JSON.stringify(captured_black))
+    if (board.orientation() === 'white') {
+        first_captured = captured_white
+        first_color = 'w'
+        second_captured = captured_black
+        second_color = 'b'
+    } else {
+        first_captured = captured_black
+        first_color = 'b'
+        second_captured = captured_white
+        second_color = 'w'
+    }
+    $('#captured').html('')
+    for (const piece in first_captured) {
+        for (let i = 0; i < first_captured[piece]; i++) {
+            $('#captured').append('<img src="/static/img/chesspieces/wikipedia/' + first_color + piece + '.png" width="15%" height="15%" />')
+        }
+    }
+    $('#captured').append('<br>' + game.pgn({newline_char: '<br>', show_headers: false}) + '<br><br>')
+    for (const piece in second_captured) {
+        for (let i = 0; i < second_captured[piece]; i++) {
+            $('#captured').append('<img src="/static/img/chesspieces/wikipedia/' + second_color + piece + '.png" width="15%" height="15%" />')
+        }
+    }
 }
 
 function getCapturedPieces(color) {
-    const captured = {'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0}
+    const captured = {'Q': 0, 'R': 0, 'B': 0, 'N': 0, 'P': 0}
 
     for (const move of game.history({ verbose: true })) {
         if (move.hasOwnProperty('captured') && move.color !== color[0]) {
-            captured[move.captured]++
+            captured[move.captured.toUpperCase()]++
         }
     }
 
@@ -228,10 +248,6 @@ if (PGN != 'None') {
     board.position(game.fen(), false)
 }
 
-let captured_white = getCapturedPieces('white')
-let captured_black = getCapturedPieces('black')
-setCapturedDisplay()
-
 if (USER_COLOR === 'white' || USER_COLOR === 'none') {
     board.orientation('white')
 } else {
@@ -245,5 +261,9 @@ if (board.orientation() === 'white') {
     $('#player1').html('<b>' + PLAYER_WHITE + '</b>')
     $('#player2').html('<b>' + PLAYER_BLACK + '</b>')
 }
+
+let captured_white = getCapturedPieces('white')
+let captured_black = getCapturedPieces('black')
+setCapturedDisplay()
 
 getChat()

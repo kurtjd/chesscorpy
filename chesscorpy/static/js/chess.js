@@ -1475,17 +1475,26 @@ var Chess = function (fen) {
       var result = []
       var header_exists = false
 
-      /* add the PGN header headerrmation */
-      for (var i in header) {
-        /* TODO: order of enumerated properties in header object is not
-         * guaranteed, see ECMA-262 spec (section 12.6.4)
-         */
-        result.push('[' + i + ' "' + header[i] + '"]' + newline)
-        header_exists = true
+      var show_headers
+      if (options.hasOwnProperty("show_headers") && !options.show_headers) {
+        show_headers = false
+      } else {
+        show_headers = true
       }
 
-      if (header_exists && history.length) {
-        result.push(newline)
+      if (show_headers) {
+          /* add the PGN header headerrmation */
+          for (var i in header) {
+            /* TODO: order of enumerated properties in header object is not
+             * guaranteed, see ECMA-262 spec (section 12.6.4)
+             */
+            result.push('[' + i + ' "' + header[i] + '"]' + newline)
+            header_exists = true
+          }
+
+          if (header_exists && history.length) {
+            result.push(newline)
+          }
       }
 
       var append_comment = function (move_string) {
@@ -1524,7 +1533,7 @@ var Chess = function (fen) {
           if (move_string.length) {
             moves.push(move_string)
           }
-          move_string = move_number + '.'
+          move_string = newline + move_number + '.'
         }
 
         move_string =

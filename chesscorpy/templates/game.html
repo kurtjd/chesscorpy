@@ -14,19 +14,24 @@
 {% endblock %}
 
 {% block main %}
-  <div id="player1"></div>
-  <div id="board" style="width: 500px"></div>
-  <div id="player2"></div><br>
-  <div id="captured"></div><br>
-  <div id="chat"></div><br>
-
-  {% if game_data.my_color != "none" %}
-  <div id="chat_form_div">
-    <form id="chat_form" onsubmit="postChat(); return false">
-      <input type="text" id="msg"><input type="submit" value="Send">
-    </form>
+  <div id="game_container">
+    <div id="chat_container">
+      <div id="chat"></div><br>
+      {% if game_data.my_color != "none" %}
+        <div id="chat_form_div">
+          <form id="chat_form" onsubmit="postChat(); return false">
+            <input type="text" id="msg">
+          </form>
+        </div>
+      {% endif %}
+    </div>
+    <div id="board_container">
+      <div id="player1"></div><br>
+      <div id="board" style="width: 500px"></div><br>
+      <div id="player2"></div>
+    </div>
+    <div id="captured"></div>
   </div>
-  {% endif %}
 
   <script>
     const PLAYER_WHITE = "{{ game_data.player_white_name }}"
