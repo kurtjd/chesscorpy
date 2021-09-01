@@ -51,7 +51,8 @@ def delete_request(request_id):
 def get_request_data_if_authed(request_id, user_id, fields=('*',)):
     """ Retrieves game request data if the user is authorized to see it. """
 
-    query = f"SELECT {','.join(fields)} FROM game_requests WHERE id = ? AND (opponent_id = 0 OR opponent_id = ?)"
+    query = f"SELECT {','.join(fields)} FROM game_requests WHERE id = ? AND (opponent_id = {user.PUBLIC_USER_ID} " \
+            "OR opponent_id = ?)"
     query_args = [request_id, user_id]
 
     return database.sql_exec(database.DATABASE_FILE, query, query_args, False)
