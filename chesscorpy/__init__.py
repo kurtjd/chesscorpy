@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'chesscorpy@gmail.com'
-app.config['MAIL_PASSWORD'] = '*******'
+app.config['MAIL_PASSWORD'] = '***'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
@@ -313,8 +313,12 @@ def move_request():
         ):
             return jsonify(successful=False)
 
-        return jsonify(successful=handle_move.process_move(
-            move, database.row_to_dict(game_data)))
+        # Need app context for process_move to send mail.
+        with app.app_context():
+            move_success = handle_move.process_move(
+                move, database.row_to_dict(game_data), mail)
+
+        return jsonify(successful=move_success)
     else:
         return redirect('/')
 

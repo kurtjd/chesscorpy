@@ -8,18 +8,17 @@ from flask import redirect, render_template
 from . import user, games, database
 
 
-def _mail_loser_timeout(user_id, mail):
-    user_data = user.get_data_by_id(user_id, ['username', 'email'])
+def send_mail(mail, to, subject, body, user_id):
+    if int(user.get_data_by_id(user_id,
+                                ['notifications'])['notifications']) == 0:
+        return False
 
-    msg = flask_mail.Message('Game Update', sender='chesscorpy@gmail.com',
-                             recipients=[user_data['email']])
-    msg.body = (
-        f'Hi {user_data["username"]},\n\n'
-        'Unfortunately you have lost a game due to timeout.\n\n'
-        'From,\n'
-        'ChessCorPyBot'
-    )
+    msg = flask_mail.Message(subject, sender='chesscorpy@gmail.com',
+                             recipients=[to])
+    msg.body = body
     mail.send(msg)
+
+    return True
 
 
 def error(msg, code):
@@ -83,6 +82,7 @@ def check_games(mail):
     all_games = games.get_games()
 
     for game in all_games:
+        # Check if any player has timed out.
         if get_turn_time_left(game['move_start_time'],
                               game['turn_day_limit']) < datetime.timedelta():
             if game['to_move'] == game['player_white_id']:
@@ -90,8 +90,19 @@ def check_games(mail):
             else:
                 winner = game['player_white_id']
 
+            # If so, update game status.
             query = (f'UPDATE games SET status = "{games.Status.TIMEOUT}", '
                      f'winner = {winner} WHERE id = {game["id"]}')
             database.sql_exec(database.DATABASE_FILE, query)
 
-            _mail_loser_timeout(game['to_move'], mail)
+            # Then email the loser.
+            loser_data = user.get_data_by_id(game['to_move'],
+                                             ['id', 'username', 'email'])
+            msg = (
+                f'Hi {loser_data["username"]},\n\n'
+                'Unfortunately you have lost a game due to timeout.\n\n'
+                'From,\n'
+                'ChessCorPyBot'
+            )
+            send_mail(mail, loser_data['email'], 'Game Update', msg,
+                      loser_data['id'])

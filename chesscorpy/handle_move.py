@@ -4,7 +4,7 @@ import io
 import chess
 import chess.pgn
 
-from . import user, database, games
+from . import user, database, games, helpers
 
 
 def _update_game_db(game_data):
@@ -89,7 +89,7 @@ def _attempt_move(move_san, game):
         return False
 
 
-def process_move(move_san, game_data):
+def process_move(move_san, game_data, mail):
     """Processes a move request from a user."""
 
     board = chess.Board()
@@ -109,5 +109,19 @@ def process_move(move_san, game_data):
     _update_game_data(game_data, str(game).replace('\n', '\\n'),
                       _get_game_status(board))
     _update_game_db(game_data)
+
+    # Notify the next player to move that it's their turn.
+    next_player = user.get_data_by_id(game_data['to_move'],
+                                      ['id', 'username', 'email'])
+    msg = (
+        f'Hi {next_player["username"]}!\n\n'
+        f'Your opponent has played the move {move_san}. '
+        f'You have {game_data["turn_day_limit"]} days to make a move.\n\n'
+        'Your pal,\n'
+        'ChessCorPyBot'
+    )
+
+    helpers.send_mail(mail, next_player['email'], 'Game Update', msg,
+                      next_player['id'])
 
     return True
