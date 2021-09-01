@@ -1,8 +1,11 @@
 from enum import Enum, auto
+
 from . import user
 
 
 class Username(Enum):
+    """Handles error checking for the username."""
+
     VALID = auto()
     NONE = auto()
     TOO_LONG = auto()
@@ -21,6 +24,8 @@ class Username(Enum):
 
 
 class Password(Enum):
+    """Handles error checking for the password."""
+
     VALID = auto()
     NONE = auto()
 
@@ -33,6 +38,8 @@ class Password(Enum):
 
 
 class Email(Enum):
+    """Handles error checking for the email."""
+
     VALID = auto()
     NONE = auto()
 
@@ -45,6 +52,8 @@ class Email(Enum):
 
 
 class Rating(Enum):
+    """Handles error checking for the rating."""
+
     VALID = auto()
     NONE = auto()
     OUT_OF_BOUNDS = auto()
@@ -60,6 +69,8 @@ class Rating(Enum):
 
 
 class GameColor(Enum):
+    """Handles error checking for the game color."""
+
     VALID = auto()
     NONE = auto()
     BAD_COLOR = auto()
@@ -75,6 +86,8 @@ class GameColor(Enum):
 
 
 class TurnLimit(Enum):
+    """Handles error checking for the turn limit."""
+
     VALID = auto()
     NONE = auto()
     OUT_OF_BOUNDS = auto()
@@ -90,6 +103,8 @@ class TurnLimit(Enum):
 
 
 class GameRatings(Enum):
+    """Handles error checking for min and max game ratings."""
+
     VALID = auto()
     MIN_NONE = auto()
     MAX_NONE = auto()

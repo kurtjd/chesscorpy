@@ -1,7 +1,8 @@
 import flask_session
 from flask import Flask, render_template, redirect, request, jsonify, escape
-from . import helpers, database, input_validation, handle_errors, user, games, handle_move
-from . import chat
+
+from . import helpers, database, input_validation, handle_errors, user, games
+from . import handle_move, chat
 
 
 app = Flask(__name__)
@@ -11,17 +12,21 @@ flask_session.Session(app)
 
 @app.route('/')
 def index():
-    """ Displays the homepage if user is not logged in, otherwise display user page. """
+    """Displays the homepage if user is not logged in,
+    otherwise display user page.
+    """
 
     if user.logged_in():
-        return render_template('/index_loggedin.html', user_data=user.get_data_by_id(user.get_logged_in_id()))
+        return render_template(
+            '/index_loggedin.html',
+            user_data=user.get_data_by_id(user.get_logged_in_id()))
     else:
         return render_template('index.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """ Allows a new user to register. """
+    """Allows a new user to register."""
 
     if user.logged_in():
         return redirect('/')
@@ -47,7 +52,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """ Allows a user to login. """
+    """Allows a user to login."""
 
     if user.logged_in():
         return redirect('/')
@@ -76,7 +81,7 @@ def login():
 @app.route('/logout')
 @helpers.login_required
 def logout():
-    """ Logs a user out. """
+    """Logs a user out."""
 
     user.delete_session()
     return redirect('/')
@@ -85,7 +90,7 @@ def logout():
 @app.route('/profile')
 @helpers.login_required
 def profile():
-    """ Displays the profile of a user. """
+    """Displays the profile of a user."""
 
     user_id = request.args.get('id', type=int)
     user_data = user.get_data_by_id(user_id)
@@ -99,16 +104,22 @@ def profile():
 @app.route('/opengames')
 @helpers.login_required
 def opengames():
-    """ Displays a list of public or private game requests and allows users to sort and accept these requests. """
+    """Displays a list of public or private game requests
+    and allows users to sort and accept these requests.
+    """
 
-    games_ = games.get_direct_requests() if request.args.get('direct') else games.get_public_requests()
+    if request.args.get('direct'):
+        games_ = games.get_direct_requests()
+    else:
+        games_ = games.get_public_requests()
+
     return render_template('opengames.html', games=games_)
 
 
 @app.route('/newgame', methods=['GET', 'POST'])
 @helpers.login_required
 def newgame():
-    """ Allows users to create a game request. """
+    """Allows users to create a game request."""
 
     if request.method == 'POST':
         username = request.form.get('username').lower()
@@ -118,38 +129,49 @@ def newgame():
         maxrating = request.form.get('maxrating', type=int)
         is_public = 0 if not request.form.get('public') else 1
 
-        errors = handle_errors.for_newgame_input(username, color, turnlimit, minrating, maxrating)
+        errors = handle_errors.for_newgame_input(username, color, turnlimit,
+                                                 minrating, maxrating)
         if errors:
             return errors
 
-        games.create_request(user.get_logged_in_id(), games.get_opponent_id(username), turnlimit, minrating,
-                             maxrating, color, is_public)
+        games.create_request(user.get_logged_in_id(),
+                             games.get_opponent_id(username), turnlimit,
+                             minrating, maxrating, color, is_public)
 
         return redirect('/opengames')
     else:
-        username = request.args.get('username') if request.args.get('username') else 'Public'
+        if request.args.get('username'):
+            username = request.args.get('username')
+        else:
+            username = 'Public'
+
         return render_template('newgame.html', username=username)
 
 
 @app.route('/start')
 @helpers.login_required
 def start():
-    """ Creates a game from a game request. """
+    """Creates a game from a game request."""
 
     request_id = request.args.get('id', type=int)
 
     if not request_id:
         return redirect('/')
 
-    game_request = games.get_request_data_if_authed(request_id, user.get_logged_in_id())
+    game_request = games.get_request_data_if_authed(request_id,
+                                                    user.get_logged_in_id())
 
     if not game_request:
         return redirect('/')
 
-    white_id, black_id = helpers.determine_player_colors(game_request['color'], game_request['user_id'],
-                                                         user.get_logged_in_id())
+    white_id, black_id = helpers.determine_player_colors(
+        game_request['color'], game_request['user_id'],
+        user.get_logged_in_id())
 
-    game_id = games.create_game(white_id, black_id, game_request['turn_day_limit'], game_request['public'])
+    game_id = games.create_game(white_id, black_id,
+                                game_request['turn_day_limit'],
+                                game_request['public'])
+
     games.delete_request(request_id)
 
     return redirect(f'/game?id={game_id}')
@@ -158,7 +180,9 @@ def start():
 @app.route('/game')
 @helpers.login_required
 def game():
-    """ Generates a game board based on the status of the game and allows user to make moves. """
+    """Generates a game board based on the status of the game and
+    allows user to make moves.
+    """
 
     game_id = request.args.get('id', type=int)
     game_data = games.get_game_data_if_authed(game_id, user.get_logged_in_id())
@@ -167,8 +191,10 @@ def game():
         return redirect('/')
 
     game_data = database.row_to_dict(game_data)
-    game_data['player_white_name'] = user.get_data_by_id(game_data['player_white_id'], ['username'])['username']
-    game_data['player_black_name'] = user.get_data_by_id(game_data['player_black_id'], ['username'])['username']
+    game_data['player_white_name'] = user.get_data_by_id(
+        game_data['player_white_id'], ['username'])['username']
+    game_data['player_black_name'] = user.get_data_by_id(
+        game_data['player_black_id'], ['username'])['username']
 
     if game_data['player_white_id'] == user.get_logged_in_id():
         game_data['my_color'] = 'white'
@@ -183,7 +209,7 @@ def game():
 @app.route('/mygames')
 @helpers.login_required
 def mygames():
-    """ Displays the active games of the user. """
+    """Displays the active games of the user."""
 
     my_move = request.args.get('my_move')
 
@@ -192,13 +218,14 @@ def mygames():
     else:
         games_ = games.get_active_games(user.get_logged_in_id())
 
-    return render_template('mygames.html', games=games.format_active_games(games_))
+    return render_template('mygames.html',
+                           games=games.format_active_games(games_))
 
 
 @app.route('/history')
 @helpers.login_required
 def history():
-    """ Displays the game history of a user. """
+    """Displays the game history of a user."""
 
     user_id = request.args.get('id', type=int)
     user_ = user.get_data_by_id(user_id, ['username'])
@@ -209,25 +236,32 @@ def history():
     username = user_['username']
     games_ = games.get_game_history_if_authed(user_id, user.get_logged_in_id())
 
-    return render_template('history.html', games=games.format_game_history(games_), username=username)
+    return render_template('history.html',
+                           games=games.format_game_history(games_),
+                           username=username)
 
 
 @app.route('/move', methods=['GET', 'POST'])
 @helpers.login_required
 def move_request():
-    """ Processes a move request for a game by a user. """
+    """Processes a move request for a game by a user."""
 
     if request.method == 'POST':
         game_id = request.form.get('id', type=int)
         move = request.form.get('move')
-        game_data = games.get_game_data_if_to_move(game_id, user.get_logged_in_id())
+        game_data = games.get_game_data_if_to_move(game_id,
+                                                   user.get_logged_in_id())
 
-        # Don't let user move in an already completed game or game they are not a player of.
-        if not game_data or not move or (game_data['status'] != games.Status.NO_MOVE and
-                                         game_data['status'] != games.Status.IN_PROGRESS):
+        # Don't let user move in an already completed game
+        # or game they are not a player of.
+        if not game_data or not move or (
+                game_data['status'] != games.Status.NO_MOVE
+                and game_data['status'] != games.Status.IN_PROGRESS
+        ):
             return jsonify(successful=False)
 
-        return jsonify(successful=handle_move.process_move(move, database.row_to_dict(game_data)))
+        return jsonify(successful=handle_move.process_move(
+            move, database.row_to_dict(game_data)))
     else:
         return redirect('/')
 
@@ -235,7 +269,7 @@ def move_request():
 @app.route('/chat', methods=['GET', 'POST'])
 @helpers.login_required
 def handle_chat():
-    """ Sends or retrieves chat messages. """
+    """Sends or retrieves chat messages."""
 
     if request.method == 'GET':
         return jsonify(chat.get_chats(request.args.get('id', type=int)))
@@ -244,8 +278,10 @@ def handle_chat():
         user_id = request.form.get('user_id', type=int)
         msg = escape(request.form.get('msg'))
 
-        if not game_id or not user_id or not msg or len(msg) > chat.CHAT_MSG_MAX_LEN or \
-                user_id != user.get_logged_in_id() or not games.get_game_data_if_authed(game_id, user_id, False):
+        if (not game_id or not user_id or not msg
+                or len(msg) > chat.CHAT_MSG_MAX_LEN
+                or user_id != user.get_logged_in_id()
+                or not games.get_game_data_if_authed(game_id, user_id, False)):
             return jsonify(successful=False)
 
         chat.new_chat(game_id, user_id, msg)

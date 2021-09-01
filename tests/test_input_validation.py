@@ -1,10 +1,12 @@
 from chesscorpy import user
-from chesscorpy.input_validation import Username, Password, Email, Rating, GameColor, TurnLimit, GameRatings
+from chesscorpy.input_validation import Username, Password, Email, Rating
+from chesscorpy.input_validation import GameColor, TurnLimit, GameRatings
 
 
 def test_username_check_valid():
     assert Username.check_valid('') is Username.NONE
-    assert Username.check_valid('Very Long Username This Is') is Username.TOO_LONG
+    assert (Username.check_valid('Very Long Username This Is') is
+            Username.TOO_LONG)
     assert Username.check_valid('JohnDoe') is Username.VALID
     assert Username.check_valid('A' * user.USERNAME_MAX_LEN) is Username.VALID
 

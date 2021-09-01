@@ -1,19 +1,20 @@
 import random
 import datetime
 from functools import wraps
+
 from flask import redirect, render_template
+
 from . import user
 
 
 def error(msg, code):
-    """ Displays an error page with error message and error code. """
+    """Displays an error page with error message and error code."""
 
     return render_template('error.html', msg=msg, code=code)
 
 
 def login_required(f):
-    """
-    Decorate routes to require login.
+    """Decorate routes to require login.
 
     https://flask.palletsprojects.com/en/2.0.x/patterns/viewdecorators/
     """
@@ -26,13 +27,15 @@ def login_required(f):
 
 
 def get_player_colors(white_id, user_id):
-    """ Returns a tuple of colors in the order (user, opponent). """
+    """Returns a tuple of colors in the order (user, opponent)."""
 
     return ('White', 'black') if white_id == user_id else ('Black', 'white')
 
 
 def determine_player_colors(requester_color, requester_id, challenger_id):
-    """ Determines which user is which color and returns a tuple in the form (player white, player black). """
+    """Determines which user is which color and
+    returns a tuple in the form (player white, player black).
+    """
 
     if requester_color == 'white':
         return requester_id, challenger_id
@@ -49,10 +52,11 @@ def determine_player_colors(requester_color, requester_id, challenger_id):
 
 
 def get_turn_time_left(turn_start, turnlimit):
-    """ Determines how much time left a player has to move. """
+    """Determines how much time left a player has to move."""
 
-    # Works by getting the time the move started, adds the turn limit to that time,
+    # Works by getting the time the move started,
+    # adds the turn limit to that time,
     # and then subtracts the current time from the total.
-    return (datetime.datetime.strptime(turn_start, '%Y-%m-%d %H:%M:%S') +
-            (datetime.timedelta(days=turnlimit)) -
-            datetime.datetime.now().replace(microsecond=0))
+    return (datetime.datetime.strptime(turn_start, '%Y-%m-%d %H:%M:%S')
+            + (datetime.timedelta(days=turnlimit))
+            - datetime.datetime.now().replace(microsecond=0))

@@ -1,22 +1,26 @@
 import datetime
 import io
+
 import chess
 import chess.pgn
+
 from . import user, database, games
 
 
 def update_game_db(game_data):
-    """ Updates a given game in the database. """
+    """Updates a given game in the database."""
 
-    query = 'UPDATE games SET to_move = ?, move_start_time = ?, status = ?, winner = ?, pgn = ? WHERE id = ?'
-    query_args = [game_data['to_move'], game_data['move_start_time'], game_data['status'], game_data['winner'],
-                  game_data['pgn'], game_data['id']]
+    query = ('UPDATE games SET to_move = ?, move_start_time = ?, status = ?, '
+             'winner = ?, pgn = ? WHERE id = ?')
+    query_args = [game_data['to_move'], game_data['move_start_time'],
+                  game_data['status'], game_data['winner'], game_data['pgn'],
+                  game_data['id']]
 
     database.sql_exec(database.DATABASE_FILE, query, query_args)
 
 
 def update_player_to_move(game_data):
-    """ Set the ID of the next player to move. """
+    """Set the ID of the next player to move."""
 
     if game_data['player_white_id'] == game_data['to_move']:
         game_data['to_move'] = game_data['player_black_id']
@@ -25,13 +29,13 @@ def update_player_to_move(game_data):
 
 
 def get_game_status(game):
-    """ Gets the current status of a game. """
+    """Gets the current status of a game."""
 
     return game.outcome(claim_draw=True)
 
 
 def update_game_status(game_status, game_data):
-    """ Updates the status and result of the game. """
+    """Updates the status and result of the game."""
 
     if game_status:
         status_options = {
@@ -51,7 +55,8 @@ def update_game_status(game_status, game_data):
             win_color = None
 
         if win_color:
-            game_data['winner'] = user.get_data_by_id(game_data[f'player_{win_color}_id'], ['id'])['id']
+            game_data['winner'] = user.get_data_by_id(
+                game_data[f'player_{win_color}_id'], ['id'])['id']
         else:
             game_data['winner'] = user.DRAW_USER_ID
     else:
@@ -59,16 +64,17 @@ def update_game_status(game_status, game_data):
 
 
 def update_game_data(game_data, game_pgn, game_status):
-    """ Updates the local copy of game data. """
+    """Updates the local copy of game data."""
 
     game_data['pgn'] = game_pgn
-    game_data['move_start_time'] = datetime.datetime.now().replace(microsecond=0)
+    game_data['move_start_time'] = (
+        datetime.datetime.now().replace(microsecond=0))
     update_player_to_move(game_data)
     update_game_status(game_status, game_data)
 
 
 def attempt_move(move_san, game):
-    """ Attempts to make a move if valid. """
+    """Attempts to make a move if valid."""
 
     move = game.parse_san(move_san)
     if move in game.legal_moves:
@@ -79,18 +85,21 @@ def attempt_move(move_san, game):
 
 
 def regen_pgn_headers(game, game_data):
-    """ Regenerates the PGN headers for the game. """
+    """Regenerates the PGN headers for the game."""
 
     game.headers['Event'] = 'Correspondence Chess'
     game.headers['Site'] = 'ChessCorPy'
-    game.headers['Date'] = datetime.datetime.strptime(game_data['timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%Y.%m.%d')
+    game.headers['Date'] = datetime.datetime.strptime(
+        game_data['timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%Y.%m.%d')
     game.headers['Round'] = '-'
-    game.headers['White'] = user.get_data_by_id(game_data[f'player_white_id'], ['username'])['username']
-    game.headers['Black'] = user.get_data_by_id(game_data[f'player_black_id'], ['username'])['username']
+    game.headers['White'] = user.get_data_by_id(game_data[f'player_white_id'],
+                                                ['username'])['username']
+    game.headers['Black'] = user.get_data_by_id(game_data[f'player_black_id'],
+                                                ['username'])['username']
 
 
 def board_load_pgn(board, pgn):
-    """ Loads pgn into a board. """
+    """Loads pgn into a board."""
 
     game = chess.pgn.read_game(io.StringIO(pgn))
     for move in game.mainline_moves():
@@ -98,7 +107,7 @@ def board_load_pgn(board, pgn):
 
 
 def process_move(move_san, game_data):
-    """ Processes a move request from a user. """
+    """Processes a move request from a user."""
 
     board = chess.Board()
 
@@ -110,10 +119,12 @@ def process_move(move_san, game_data):
 
     game = chess.pgn.Game.from_board(board)
 
-    # Since PGN data is generated from the board, previous headers are lost so re-generate them.
+    # Since PGN data is generated from the board,
+    # previous headers are lost so re-generate them.
     regen_pgn_headers(game, game_data)
 
-    update_game_data(game_data, str(game).replace('\n', '\\n'), get_game_status(board))
+    update_game_data(game_data, str(game).replace('\n', '\\n'),
+                     get_game_status(board))
     update_game_db(game_data)
 
     return True

@@ -5,7 +5,7 @@ DATABASE_FILE = 'chesscorpy.db'
 
 
 def sql_exec(db, query, query_args, get_all=True, get_last_row=False):
-    """ Performs queries on a database. """
+    """Performs queries on a database."""
 
     db = connect(db)
     db.row_factory = Row
@@ -23,12 +23,12 @@ def sql_exec(db, query, query_args, get_all=True, get_last_row=False):
 
 
 def row_to_dict(row):
-    """ Converts a Row object into a dictionary. """
+    """Converts a Row object into a dictionary."""
 
     return dict(row)
 
 
 def rows_to_list(rows):
-    """ Converts rows to a list of dicts. """
+    """Converts rows to a list of dicts."""
 
     return [row_to_dict(row) for row in rows]

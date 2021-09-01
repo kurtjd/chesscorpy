@@ -11,7 +11,8 @@ function getUserId() {
 function setChatDisplay(chats) {
     $('#chat').html('')
     for (const msg of chats) {
-        $('#chat').append('<b>' + msg['user_name'] + '</b>: ' + msg['contents'] + '<br>')
+        $('#chat').append('<b>' + msg['user_name'] + '</b>: '
+                          + msg['contents'] + '<br>')
     }
 }
 
@@ -70,7 +71,8 @@ function postMove(move_san) {
 }
 
 function promptPromotion() {
-    const promote_to = prompt('Enter piece you want to promote to: ((q)ueen, (r)ook, (b)ishop, k(n)ight): ', 'q')
+    const promote_to = prompt('Enter piece you want to promote to: '
+                            + '((q)ueen, (r)ook, (b)ishop, k(n)ight): ', 'q')
 
     if ('qrbn'.includes(promote_to)) {
         return promote_to
@@ -90,13 +92,14 @@ function moveIsLegal(from, to) {
 }
 
 function moveIsPromotion(from, to) {
-    // Check if piece is pawn and if it is about to move to the 1st or 8th rank.
+    // Check if piece is pawn and if it is about to move to the 1st or 8th rank
     return game.get(from).type === 'p' && (to[1] === '1' || to[1] === '8')
 }
 
 function setCapturedDisplay() {
     $('#captured').html('Captured White: ' + JSON.stringify(captured_white) +
-                        '<br>Captured Black: ' + JSON.stringify(captured_black))
+                        '<br>Captured Black: '
+                        + JSON.stringify(captured_black))
 }
 
 function getCapturedPieces(color) {
@@ -143,9 +146,10 @@ function highlightSquare(square) {
 }
 
 function onPieceDrag(source, piece, position, orientation) {
-    // Checks that it's the selected piece's color's turn to move, that it is the player's turn,
-    // and that the game is not over.
-    if (game.turn() != piece[0] || game.turn() != USER_COLOR[0] || game.game_over()) {
+    // Checks that it's the selected piece's color's turn to move,
+    // that it is the player's turn, and that the game is not over.
+    if (game.turn() != piece[0] || game.turn() != USER_COLOR[0] ||
+        game.game_over()) {
         return false
     }
 }
@@ -169,7 +173,8 @@ function onPieceMove(source, target) {
         return 'snapback'
     }
 
-    // For now naively re-check for captured pieces even if move didn't result in capture.
+    // For now naively re-check for captured pieces
+    // even if move didn't result in capture.
     captured_white = getCapturedPieces('white')
     captured_black = getCapturedPieces('black')
     setCapturedDisplay()
