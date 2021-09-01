@@ -11,14 +11,12 @@ from . import user
 def send_mail(mail, to, subject, body, user_id):
     if int(user.get_data_by_id(user_id,
                                ['notifications'])['notifications']) == 0:
-        return False
+        return
 
     msg = flask_mail.Message(subject, sender='chesscorpy@gmail.com',
                              recipients=[to])
     msg.body = body
     mail.send(msg)
-
-    return True
 
 
 def error(msg, code):
