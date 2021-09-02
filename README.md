@@ -16,6 +16,8 @@ Although this does not have near the number of features of professional chess ap
 * Input validation, error handling, and basic security
 * And of course, a playable chess board!
 
+View a live demo [here!](https://chesscorpy.herokuapp.com/)
+
 Requirements
 ============
 * Python 3+
