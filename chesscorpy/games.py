@@ -205,8 +205,8 @@ def get_opponent_id(username):
 def get_games():
     """Retrieves all active games."""
 
-    query = (f'SELECT * FROM games WHERE status == "{Status.NO_MOVE}" '
-             f'OR status == "{Status.IN_PROGRESS}"')
+    query = (f'SELECT * FROM games WHERE status = "{Status.NO_MOVE}" '
+             f'OR status = "{Status.IN_PROGRESS}"')
 
     return database.sql_exec(database.DATABASE_FILE, query)
 
