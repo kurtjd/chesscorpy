@@ -48,6 +48,10 @@ Unit tests are kept in the /tests folder and can be run with pytest.
 This was my first time implementing tests so I never got around to implementing
 any that require mock data but I will work on that next time.
 
+Contribution
+============
+Anyone is free to contribute. If a front-end developer wants to take a stab at making it less ugly and functional on mobile I'd greatly appreciate it!
+
 Acknowledgements
 ================
 * Chris Oakman (chessboard.js)
